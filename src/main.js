@@ -1,5 +1,22 @@
 const defaultImageSrc = "./assets/level-cat.png";
 const playerMode = window.XINDONG_PLAYER_MODE === true;
+const fixedLevelConfigs = {
+  "1": {
+    src: "./assets/level-1.png",
+    name: "关卡 1",
+    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+  },
+  "2": {
+    src: "./assets/level-2.png",
+    name: "关卡 2",
+    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+  },
+  "3": {
+    src: "./assets/level-3.png",
+    name: "关卡 3",
+    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+  },
+};
 const storageKey = "xindong-levels";
 const maxTime = 600;
 const traySize = 36;
@@ -253,6 +270,29 @@ function syncControls() {
   elements.patternBoard.classList.toggle("show-split", elements.showSplitInput.checked);
 }
 
+function applyGeneratorSettings(settings) {
+  elements.widthInput.value = settings.cols;
+  elements.heightInput.value = settings.rows;
+  elements.maxColorsInput.value = settings.maxColors;
+  elements.offsetXInput.value = settings.offsetX;
+  elements.offsetYInput.value = settings.offsetY;
+  elements.imageScaleInput.value = settings.imageScale;
+  elements.brightnessInput.value = settings.brightness;
+  elements.contrastInput.value = settings.contrast;
+  elements.saturationInput.value = settings.saturation;
+  syncControls();
+}
+
+async function loadFixedLevelIntoGenerator(levelId) {
+  const config = fixedLevelConfigs[levelId];
+  if (!config) return null;
+  sourceImage = await loadImage(config.src);
+  sourceImageName = config.src.split("/").pop();
+  sourceImageDataUrl = config.src;
+  applyGeneratorSettings(config.settings);
+  return generatedLevels[levelId] || null;
+}
+
 function sampleCellsFromImage(image, settings) {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d", { willReadFrequently: true });
@@ -396,7 +436,7 @@ function generateLevelFromImage(image, settings, levelId = elements.levelSelect.
 
   return {
     id: `level-${levelId}`,
-    name: `关卡 ${levelId}`,
+    name: fixedLevelConfigs[levelId]?.name || `关卡 ${levelId}`,
     sourceName: sourceImageName,
     sourceImage: sourceImageDataUrl,
     rows: settings.rows,
@@ -522,16 +562,21 @@ function generateAndStoreLevel() {
   }
 }
 
-function buildPlayerLevels() {
-  const baseSettings = getGeneratorSettings();
-  const fixedSettings = {
-    "1": { ...baseSettings, maxColors: 0, imageScale: 100 },
-    "2": { ...baseSettings, maxColors: 8, imageScale: 112 },
-    "3": { ...baseSettings, maxColors: 12, imageScale: 124 },
-  };
-  generatedLevels = Object.fromEntries(
-    Object.entries(fixedSettings).map(([levelId, settings]) => [levelId, generateLevelFromImage(sourceImage, settings, levelId)]),
+async function buildFixedLevels() {
+  const entries = await Promise.all(
+    Object.entries(fixedLevelConfigs).map(async ([levelId, config]) => {
+      const image = await loadImage(config.src);
+      const previousName = sourceImageName;
+      const previousDataUrl = sourceImageDataUrl;
+      sourceImageName = config.src.split("/").pop();
+      sourceImageDataUrl = config.src;
+      const level = generateLevelFromImage(image, config.settings, levelId);
+      sourceImageName = previousName;
+      sourceImageDataUrl = previousDataUrl;
+      return [levelId, level];
+    }),
   );
+  generatedLevels = Object.fromEntries(entries);
   currentGeneratedLevel = generatedLevels[selectedLevelId];
 }
 
@@ -1085,7 +1130,10 @@ function clampPan(nextPan) {
 
 function bindEvents() {
   elements.homeTab.addEventListener("click", () => setActiveView("home"));
-  elements.generatorTab.addEventListener("click", () => setActiveView("generator"));
+  elements.generatorTab.addEventListener("click", async () => {
+    await loadFixedLevelIntoGenerator(selectedLevelId);
+    setActiveView("generator");
+  });
   elements.gameTab.addEventListener("click", () => {
     setActiveView("game");
     initGame().catch((error) => handleGameLoadError(error));
@@ -1117,8 +1165,9 @@ function bindEvents() {
     setActiveView("game");
     initGame().catch((error) => handleGameLoadError(error));
   });
-  elements.levelSelect.addEventListener("change", () => {
+  elements.levelSelect.addEventListener("change", async () => {
     selectedLevelId = elements.levelSelect.value;
+    await loadFixedLevelIntoGenerator(selectedLevelId);
     const stored = generatedLevels[elements.levelSelect.value];
     if (stored) {
       currentGeneratedLevel = stored;
@@ -1202,17 +1251,14 @@ async function boot() {
   sourceImageDataUrl = defaultImageSrc;
   syncControls();
   if (playerMode) {
-    buildPlayerLevels();
+    await buildFixedLevels();
     renderHomePreview(generatedLevels[selectedLevelId]);
   } else {
-    const stored = generatedLevels[elements.levelSelect.value];
-    if (stored) {
-      currentGeneratedLevel = stored;
-      renderPatternPreview(stored);
-      renderHomePreview(stored);
-    } else {
-      generateAndStoreLevel();
-    }
+    await buildFixedLevels();
+    currentGeneratedLevel = generatedLevels[selectedLevelId];
+    await loadFixedLevelIntoGenerator(selectedLevelId);
+    renderPatternPreview(currentGeneratedLevel);
+    renderHomePreview(currentGeneratedLevel);
   }
   setActiveView("home");
 }
