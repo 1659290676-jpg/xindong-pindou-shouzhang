@@ -1,4 +1,5 @@
 const defaultImageSrc = "./assets/level-cat.png";
+const playerMode = window.XINDONG_PLAYER_MODE === true;
 const storageKey = "xindong-levels";
 const maxTime = 600;
 const traySize = 36;
@@ -149,6 +150,7 @@ function colorDistance(a, b) {
 }
 
 function loadStoredLevels() {
+  if (playerMode) return {};
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey)) || {};
     Object.keys(parsed).forEach((key) => {
@@ -162,6 +164,7 @@ function loadStoredLevels() {
 }
 
 function saveStoredLevels() {
+  if (playerMode) return;
   try {
     localStorage.setItem(storageKey, JSON.stringify(generatedLevels));
   } catch (error) {
@@ -370,7 +373,7 @@ function nearestColor(rgb, palette) {
   return best;
 }
 
-function generateLevelFromImage(image, settings) {
+function generateLevelFromImage(image, settings, levelId = elements.levelSelect.value) {
   const sampled = sampleCellsFromImage(image, settings);
   const paletteRgb = buildPalette(sampled.colors, settings.maxColors);
   if (!paletteRgb.length) {
@@ -392,8 +395,8 @@ function generateLevelFromImage(image, settings) {
   );
 
   return {
-    id: `level-${elements.levelSelect.value}`,
-    name: `关卡 ${elements.levelSelect.value}`,
+    id: `level-${levelId}`,
+    name: `关卡 ${levelId}`,
     sourceName: sourceImageName,
     sourceImage: sourceImageDataUrl,
     rows: settings.rows,
@@ -480,6 +483,7 @@ function syncHomeLevelButtons() {
 }
 
 function setActiveView(view) {
+  if (playerMode && view === "generator") view = "home";
   const isHome = view === "home";
   const isGenerator = view === "generator";
   const isGame = view === "game";
@@ -516,6 +520,19 @@ function generateAndStoreLevel() {
     showToast("生成失败，请换图或调整参数");
     return null;
   }
+}
+
+function buildPlayerLevels() {
+  const baseSettings = getGeneratorSettings();
+  const fixedSettings = {
+    "1": { ...baseSettings, maxColors: 0, imageScale: 100 },
+    "2": { ...baseSettings, maxColors: 8, imageScale: 112 },
+    "3": { ...baseSettings, maxColors: 12, imageScale: 124 },
+  };
+  generatedLevels = Object.fromEntries(
+    Object.entries(fixedSettings).map(([levelId, settings]) => [levelId, generateLevelFromImage(sourceImage, settings, levelId)]),
+  );
+  currentGeneratedLevel = generatedLevels[selectedLevelId];
 }
 
 function shuffle(values) {
@@ -1184,13 +1201,18 @@ async function boot() {
   sourceImageName = "level-cat.png";
   sourceImageDataUrl = defaultImageSrc;
   syncControls();
-  const stored = generatedLevels[elements.levelSelect.value];
-  if (stored) {
-    currentGeneratedLevel = stored;
-    renderPatternPreview(stored);
-    renderHomePreview(stored);
+  if (playerMode) {
+    buildPlayerLevels();
+    renderHomePreview(generatedLevels[selectedLevelId]);
   } else {
-    generateAndStoreLevel();
+    const stored = generatedLevels[elements.levelSelect.value];
+    if (stored) {
+      currentGeneratedLevel = stored;
+      renderPatternPreview(stored);
+      renderHomePreview(stored);
+    } else {
+      generateAndStoreLevel();
+    }
   }
   setActiveView("home");
 }

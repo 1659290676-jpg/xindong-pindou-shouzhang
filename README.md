@@ -4,6 +4,8 @@
 
 ## 当前内容
 
+- 玩家入口：`src/player.html`，只保留关卡入口与试玩游戏，面向对外分享。
+- 开发者入口：`src/index.html`，保留关卡生成器，用于后续关卡拓展。
 - 关卡入口页：展示游戏标题、当前关卡预览和关卡进入按钮。
 - 关卡生成器：导入图片，调整尺寸、缩放、位置和色彩参数，生成拼豆底图。
 - 试玩游戏：将打乱的拼豆移入暂存格，再放回正确底色位置完成贴纸复原。
@@ -40,3 +42,15 @@ http://127.0.0.1:4173/
 ## 发布
 
 项目已配置 GitHub Pages workflow。推送到 GitHub 后，Actions 会将 `src/` 目录发布为可试玩网站。
+
+对外玩家链接使用：
+
+```text
+https://1659290676-jpg.github.io/xindong-pindou-shouzhang/player.html
+```
+
+开发者页面使用：
+
+```text
+https://1659290676-jpg.github.io/xindong-pindou-shouzhang/
+```

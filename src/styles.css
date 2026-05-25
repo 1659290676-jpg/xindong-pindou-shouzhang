@@ -53,6 +53,19 @@ select {
   border-bottom: 1px solid var(--line);
 }
 
+.player-mode .mode-tabs {
+  display: none;
+}
+
+.player-mode .app-shell {
+  grid-template-rows: 1fr;
+}
+
+.player-mode .home-phone,
+.player-mode .game-shell {
+  height: min(852px, 100vh);
+}
+
 .tab-button,
 .primary-button,
 .tool-button,
