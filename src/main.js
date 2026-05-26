@@ -1,32 +1,71 @@
 const defaultImageSrc = "./assets/level-cat.png";
 const playerMode = window.XINDONG_PLAYER_MODE === true;
+const levelProgressKey = "xindong-level-progress";
+const totalHomeLevels = 10;
+const fixedLevelData = window.NEKO_FIXED_LEVELS || {};
 const fixedLevelConfigs = {
   "1": {
     src: "./assets/level-1.png",
     name: "关卡 1",
-    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+    settings: { cols: 30, rows: 30, maxColors: 3, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -2, contrast: 54, saturation: 106 },
   },
   "2": {
     src: "./assets/level-2.png",
     name: "关卡 2",
-    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+    settings: { cols: 30, rows: 30, maxColors: 4, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
   },
   "3": {
     src: "./assets/level-3.png",
     name: "关卡 3",
-    settings: { cols: 30, rows: 30, maxColors: 10, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+    settings: { cols: 30, rows: 30, maxColors: 5, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 46 },
+  },
+  "4": {
+    src: "./assets/level-4.png",
+    name: "关卡 4",
+    settings: { cols: 30, rows: 30, maxColors: 6, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "5": {
+    src: "./assets/level-5.png",
+    name: "关卡 5",
+    settings: { cols: 30, rows: 30, maxColors: 6, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "6": {
+    src: "./assets/level-6.png",
+    name: "关卡 6",
+    settings: { cols: 30, rows: 30, maxColors: 4, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "7": {
+    src: "./assets/level-7.png",
+    name: "关卡 7",
+    settings: { cols: 30, rows: 30, maxColors: 5, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "8": {
+    src: "./assets/level-8.png",
+    name: "关卡 8",
+    settings: { cols: 30, rows: 30, maxColors: 6, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "9": {
+    src: "./assets/level-9.png",
+    name: "关卡 9",
+    settings: { cols: 30, rows: 30, maxColors: 5, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
+  },
+  "10": {
+    src: "./assets/level-10.png",
+    name: "关卡 10",
+    settings: { cols: 30, rows: 30, maxColors: 8, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
   },
 };
 const storageKey = "xindong-levels";
-const maxTime = 600;
+const baseLevelTime = 600;
+const levelTimeStep = 300;
 const traySize = 36;
 const trayCols = 12;
 const maxPickupPerClick = trayCols;
-const idleHintDelay = 15000;
+const idleHintDelay = 10000;
 const hintDuration = 4200;
 const maxHintCells = 6;
 const backgroundCutoff = 250;
-const minInkRatio = 0.02;
+const minInkRatio = 0.008;
 const boardSplitSize = 29;
 
 const elements = {
@@ -40,6 +79,9 @@ const elements = {
   homePatternBoard: document.getElementById("homePatternBoard"),
   homeLevelSelector: document.getElementById("homeLevelSelector"),
   homeLevelNumber: document.getElementById("homeLevelNumber"),
+  homeLevelHint: document.getElementById("homeLevelHint"),
+  homeCoin: document.getElementById("homeCoin"),
+  homePlayerLevel: document.getElementById("homePlayerLevel"),
   startLevelButton: document.getElementById("startLevelButton"),
   levelSelect: document.getElementById("levelSelect"),
   imageInput: document.getElementById("imageInput"),
@@ -91,13 +133,14 @@ let sourceImage = null;
 let sourceImageName = "内置猫咪素材";
 let sourceImageDataUrl = null;
 let generatedLevels = loadStoredLevels();
+let levelProgress = loadLevelProgress();
 let currentGeneratedLevel = null;
 let activeGameLevel = null;
 let selectedLevelId = "1";
 let board = [];
 let tray = [];
 let selectedTrayIndex = null;
-let secondsLeft = maxTime;
+let secondsLeft = getLevelTimeLimit();
 let timerId = null;
 let won = false;
 let zoomed = false;
@@ -167,7 +210,6 @@ function colorDistance(a, b) {
 }
 
 function loadStoredLevels() {
-  if (playerMode) return {};
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey)) || {};
     Object.keys(parsed).forEach((key) => {
@@ -187,6 +229,22 @@ function saveStoredLevels() {
   } catch (error) {
     console.warn("关卡数据保存失败", error);
     showToast("关卡已生成，但本地保存空间不足");
+  }
+}
+
+function loadLevelProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(levelProgressKey)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLevelProgress() {
+  try {
+    localStorage.setItem(levelProgressKey, JSON.stringify(levelProgress));
+  } catch (error) {
+    console.warn("关卡进度保存失败", error);
   }
 }
 
@@ -256,6 +314,20 @@ function getGeneratorSettings() {
   };
 }
 
+function cloneGeneratorSettings(settings) {
+  return {
+    cols: Number(settings.cols) || 50,
+    rows: Number(settings.rows) || 50,
+    maxColors: Number(settings.maxColors) || 0,
+    offsetX: Number(settings.offsetX) || 0,
+    offsetY: Number(settings.offsetY) || 0,
+    imageScale: Number(settings.imageScale) || 100,
+    brightness: Number(settings.brightness) || 0,
+    contrast: Number(settings.contrast) || 0,
+    saturation: Number(settings.saturation) || 0,
+  };
+}
+
 function syncControls() {
   const settings = getGeneratorSettings();
   elements.heightInput.value = settings.rows;
@@ -286,11 +358,62 @@ function applyGeneratorSettings(settings) {
 async function loadFixedLevelIntoGenerator(levelId) {
   const config = fixedLevelConfigs[levelId];
   if (!config) return null;
+  const level = await ensureFixedLevel(levelId);
   sourceImage = await loadImage(config.src);
   sourceImageName = config.src.split("/").pop();
   sourceImageDataUrl = config.src;
   applyGeneratorSettings(config.settings);
-  return generatedLevels[levelId] || null;
+  return level;
+}
+
+async function ensureFixedLevel(levelId) {
+  const normalized = normalizeLevel(generatedLevels[levelId]);
+  if (isPlayableLevel(normalized)) return normalized;
+
+  const prebuilt = normalizeLevel(fixedLevelData[levelId]);
+  if (isPlayableLevel(prebuilt)) {
+    generatedLevels[levelId] = prebuilt;
+    return prebuilt;
+  }
+
+  const config = fixedLevelConfigs[levelId];
+  if (!config) return null;
+
+  const image = await loadImage(config.src);
+  const previousName = sourceImageName;
+  const previousDataUrl = sourceImageDataUrl;
+  sourceImageName = config.src.split("/").pop();
+  sourceImageDataUrl = config.src;
+  const level = generateLevelFromImage(image, config.settings, levelId);
+  sourceImageName = previousName;
+  sourceImageDataUrl = previousDataUrl;
+  generatedLevels[levelId] = level;
+  return level;
+}
+
+async function loadLevelIntoGenerator(levelId) {
+  const stored = normalizeLevel(generatedLevels[levelId]);
+  if (stored?.sourceImage) {
+    sourceImage = await loadImage(stored.sourceImage);
+    sourceImageName = stored.sourceName || `level-${levelId}.png`;
+    sourceImageDataUrl = stored.sourceImage;
+    applyGeneratorSettings(stored.settings || {
+      cols: stored.cols,
+      rows: stored.rows,
+      maxColors: stored.palette?.length || 0,
+      offsetX: 0,
+      offsetY: 0,
+      imageScale: 100,
+      brightness: 0,
+      contrast: 0,
+      saturation: 0,
+    });
+    currentGeneratedLevel = stored;
+    renderPatternPreview(stored);
+    renderHomePreview(stored);
+    return stored;
+  }
+  return loadFixedLevelIntoGenerator(levelId);
 }
 
 function sampleCellsFromImage(image, settings) {
@@ -344,7 +467,7 @@ function sampleCellsFromImage(image, settings) {
         b += adjusted.b;
       }
 
-      if (count / (data.length / 4) < minInkRatio) {
+      if (count === 0 || count / (data.length / 4) < minInkRatio) {
         rowCells.push(null);
         continue;
       }
@@ -441,6 +564,7 @@ function generateLevelFromImage(image, settings, levelId = elements.levelSelect.
     sourceImage: sourceImageDataUrl,
     rows: settings.rows,
     cols: settings.cols,
+    settings: cloneGeneratorSettings(settings),
     palette,
     matrix,
     createdAt: new Date().toISOString(),
@@ -481,7 +605,7 @@ function renderPatternPreview(level) {
 
 function renderHomePreview(level) {
   level = normalizeLevel(level);
-  if (!level) return;
+  if (!level || !elements.homeOriginalPreview || !elements.homePatternBoard) return;
   if (level.sourceImage) {
     elements.homeOriginalPreview.src = level.sourceImage;
     elements.homeOriginalPreview.classList.remove("hidden");
@@ -513,13 +637,95 @@ function renderHomePreview(level) {
 }
 
 function syncHomeLevelButtons() {
-  elements.homeLevelNumber.textContent = selectedLevelId;
+  if (elements.homeLevelNumber) elements.homeLevelNumber.textContent = selectedLevelId;
   elements.levelSelect.value = selectedLevelId;
+  const highestCompleted = getHighestCompletedLevel();
+  const completedCount = Object.values(levelProgress).filter((progress) => progress?.completed === true).length;
+  if (elements.homeCoin) elements.homeCoin.textContent = String(completedCount * 30);
+  if (elements.homePlayerLevel) elements.homePlayerLevel.textContent = `LV.${1 + Math.floor(completedCount / 2)}`;
+  const currentLevelNumber = Math.min(totalHomeLevels, highestCompleted + 1);
+  const nextLevelNumber = Math.min(totalHomeLevels, currentLevelNumber + 1);
   elements.homeLevelSelector.querySelectorAll(".level-chip").forEach((button) => {
-    button.classList.toggle("active", button.dataset.level === selectedLevelId);
+    const levelId = button.dataset.level;
+    const levelNumber = getLevelNumber(levelId);
+    const progress = levelProgress[levelId] || {};
+    const hasLevelData = Boolean(generatedLevels[levelId]);
+    const isCompleted = progress.completed === true;
+    const isCurrent = !isCompleted && levelNumber === currentLevelNumber;
+    const isNext = !isCompleted && levelNumber === nextLevelNumber && levelNumber > currentLevelNumber;
+    const isLocked = !isCompleted && !isCurrent && !isNext;
+    const isPlayable = isCompleted || (isCurrent && hasLevelData);
+    const percent = isCompleted ? 100 : Math.max(0, Math.min(99, Math.round(progress.percent || 0)));
+    button.classList.toggle("active", levelId === selectedLevelId);
+    button.classList.toggle("complete", isCompleted);
+    button.classList.toggle("current", isCurrent);
+    button.classList.toggle("next", isNext);
+    button.classList.toggle("locked", isLocked);
+    button.disabled = false;
+    const state = button.querySelector(".level-state");
+    if (state) {
+      state.textContent = isCompleted ? "COMPLETE" : isNext ? "NEXT" : isCurrent ? "START" : "🔒";
+      state.innerHTML = "";
+      if (isLocked) {
+        const lockImage = document.createElement("img");
+        lockImage.className = "level-lock-icon";
+        lockImage.src = "./assets/ui/level-entry/lock-crop.png";
+        lockImage.alt = "锁定";
+        state.appendChild(lockImage);
+      } else if (!isCompleted) {
+        state.textContent = isNext ? "NEXT" : "START";
+      }
+      state.classList.toggle("locked-state", isLocked);
+    }
+    renderHomeLevelArt(button, generatedLevels[levelId]);
+    const progressBar = button.querySelector(".level-progress");
+    if (progressBar) {
+      progressBar.classList.toggle("visible", !isCompleted && percent > 0);
+      progressBar.style.setProperty("--progress", `${percent}%`);
+      const progressText = progressBar.querySelector("em");
+      if (progressText) progressText.textContent = `${percent}%`;
+    }
   });
   const level = generatedLevels[selectedLevelId] || currentGeneratedLevel;
   if (level) renderHomePreview(level);
+  if (elements.homeLevelHint) {
+    const progress = levelProgress[selectedLevelId] || {};
+    if (progress.completed) {
+      elements.homeLevelHint.textContent = `Level ${selectedLevelId} 已完成`;
+    } else if (progress.percent) {
+      elements.homeLevelHint.textContent = `Level ${selectedLevelId} 进度 ${Math.round(progress.percent)}%`;
+    } else if (!isLevelPlayable(selectedLevelId)) {
+      elements.homeLevelHint.textContent = `先完成上一关`;
+    } else {
+      elements.homeLevelHint.textContent = `Level ${selectedLevelId} 准备开罐`;
+    }
+  }
+}
+
+function renderHomeLevelArt(button, level) {
+  const art = button.querySelector(".level-art");
+  if (!art || !level?.sourceImage || art.dataset.sourceImage === level.sourceImage) return;
+  art.dataset.sourceImage = level.sourceImage;
+  art.className = "level-art";
+  art.innerHTML = "";
+  const image = document.createElement("img");
+  image.src = level.sourceImage;
+  image.alt = level.name || `Level ${button.dataset.level}`;
+  art.appendChild(image);
+}
+
+function getHighestCompletedLevel() {
+  let highest = 0;
+  Object.entries(levelProgress).forEach(([levelId, progress]) => {
+    if (progress?.completed) highest = Math.max(highest, getLevelNumber(levelId));
+  });
+  return highest;
+}
+
+function isLevelPlayable(levelId) {
+  const levelNumber = getLevelNumber(levelId);
+  if (!generatedLevels[levelId]) return false;
+  return levelNumber <= getHighestCompletedLevel() + 1;
 }
 
 function setActiveView(view) {
@@ -527,6 +733,7 @@ function setActiveView(view) {
   const isHome = view === "home";
   const isGenerator = view === "generator";
   const isGame = view === "game";
+  if (!isGame) stopGameTimers();
   elements.homeView.classList.toggle("hidden", !isHome);
   elements.generatorView.classList.toggle("hidden", !isGenerator);
   elements.gameView.classList.toggle("hidden", !isGame);
@@ -536,7 +743,23 @@ function setActiveView(view) {
   if (isHome) syncHomeLevelButtons();
 }
 
-function generateAndStoreLevel() {
+function getLevelNumber(levelId = selectedLevelId) {
+  const match = String(levelId || "1").match(/\d+/);
+  return Math.max(1, Number(match?.[0]) || 1);
+}
+
+function getLevelTimeLimit(levelId = selectedLevelId) {
+  const levelNumber = getLevelNumber(levelId);
+  return baseLevelTime + (levelNumber - 1) * levelTimeStep;
+}
+
+function stopGameTimers() {
+  window.clearInterval(timerId);
+  timerId = null;
+  clearIdleHint(false);
+}
+
+async function generateAndStoreLevel() {
   if (!sourceImage) {
     showToast("请先导入图片或等待内置素材加载");
     return null;
@@ -545,38 +768,45 @@ function generateAndStoreLevel() {
   const settings = getGeneratorSettings();
   try {
     elements.previewMeta.textContent = "正在生成关卡图案...";
-    const level = generateLevelFromImage(sourceImage, settings);
+    const levelId = elements.levelSelect.value;
+    const prebuilt = normalizeLevel(fixedLevelData[levelId]);
+    const isFixedAsset = typeof sourceImageDataUrl === "string" && sourceImageDataUrl.startsWith("./assets/level-");
+    const level = isFixedAsset && isPlayableLevel(prebuilt)
+      ? prebuilt
+      : generateLevelFromImage(sourceImage, settings);
     generatedLevels[elements.levelSelect.value] = level;
     selectedLevelId = elements.levelSelect.value;
     currentGeneratedLevel = level;
     saveStoredLevels();
     renderPatternPreview(level);
     renderHomePreview(level);
+    syncHomeLevelButtons();
     showToast("关卡图案已生成");
     return level;
   } catch (error) {
     console.error(error);
-    elements.previewMeta.textContent = "生成失败：未识别到有效图案";
-    showToast("生成失败，请换图或调整参数");
+    elements.previewMeta.textContent = error.message || "生成失败：未识别到有效图案";
+    showToast("生成失败，请把图片移回画布或调低缩放/偏移");
     return null;
   }
 }
 
 async function buildFixedLevels() {
-  const entries = await Promise.all(
-    Object.entries(fixedLevelConfigs).map(async ([levelId, config]) => {
-      const image = await loadImage(config.src);
-      const previousName = sourceImageName;
-      const previousDataUrl = sourceImageDataUrl;
-      sourceImageName = config.src.split("/").pop();
-      sourceImageDataUrl = config.src;
-      const level = generateLevelFromImage(image, config.settings, levelId);
-      sourceImageName = previousName;
-      sourceImageDataUrl = previousDataUrl;
-      return [levelId, level];
-    }),
-  );
-  generatedLevels = Object.fromEntries(entries);
+  const previousLevels = { ...generatedLevels };
+  const entries = [];
+  for (const levelId of Object.keys(fixedLevelConfigs)) {
+    try {
+      delete generatedLevels[levelId];
+      const level = await ensureFixedLevel(levelId);
+      if (level) entries.push([levelId, level]);
+    } catch (error) {
+      console.warn(`固定关卡 ${levelId} 生成失败`, error);
+    }
+  }
+  generatedLevels = {
+    ...previousLevels,
+    ...Object.fromEntries(entries),
+  };
   currentGeneratedLevel = generatedLevels[selectedLevelId];
 }
 
@@ -670,12 +900,17 @@ async function ensureGameLevel() {
     activeGameLevel = normalizedSelected;
     return;
   }
+  const fixedLevel = await ensureFixedLevel(selectedLevelId);
+  if (isPlayableLevel(fixedLevel)) {
+    activeGameLevel = fixedLevel;
+    return;
+  }
   if (selectedLevel) {
     delete generatedLevels[selectedLevelId];
     saveStoredLevels();
   }
   if (!sourceImage) sourceImage = await loadImage(defaultImageSrc);
-  activeGameLevel = generateAndStoreLevel();
+  activeGameLevel = await generateAndStoreLevel();
 }
 
 async function initGame() {
@@ -705,7 +940,7 @@ async function initGame() {
   tray = Array.from({ length: traySize }, () => null);
   selectedTrayIndex = null;
   correctStreak = 0;
-  secondsLeft = maxTime;
+  secondsLeft = getLevelTimeLimit(activeGameLevel.id || selectedLevelId);
   won = false;
   elements.resultModal.classList.add("hidden");
   elements.coinCount.textContent = "0";
@@ -719,12 +954,19 @@ async function initGame() {
 
 function startTimer() {
   window.clearInterval(timerId);
+  if (!elements.gameView || elements.gameView.classList.contains("hidden")) {
+    updateTimer();
+    return;
+  }
   timerId = window.setInterval(() => {
-    if (won) return;
+    if (won || elements.gameView.classList.contains("hidden")) {
+      stopGameTimers();
+      return;
+    }
     secondsLeft = Math.max(0, secondsLeft - 1);
     updateTimer();
     if (secondsLeft === 0) {
-      window.clearInterval(timerId);
+      stopGameTimers();
       showResultModal("fail");
     }
   }, 1000);
@@ -1001,7 +1243,6 @@ function findFillableTargetGroup(startCell, colorKey) {
 
 function handleTrayClick(index) {
   if (won || secondsLeft === 0) return;
-  resetIdleHintTimer();
   if (!tray[index]) {
     showToast("空槽位");
     return;
@@ -1012,9 +1253,13 @@ function handleTrayClick(index) {
 
 function checkWin() {
   if (won) return;
-  const complete = board.flat().every((cell) => !cell || cell.locked);
+  const complete = board.flat().every((cell) => !cell || (cell.current && cell.current.key === cell.target.key));
   if (!complete) return;
   won = true;
+  board.flat().forEach((cell) => {
+    if (cell?.target) cell.locked = true;
+  });
+  saveCurrentLevelProgress(100, true);
   clearIdleHint();
   window.clearInterval(timerId);
   elements.coinCount.textContent = "30";
@@ -1024,6 +1269,7 @@ function checkWin() {
 function showResultModal(type) {
   clearIdleHint();
   const isWin = type === "win";
+  if (!isWin) saveCurrentLevelProgress(calculateLevelCompletionPercent(), false);
   elements.resultPanel.classList.toggle("fail", !isWin);
   elements.resultPanel.classList.toggle("win", isWin);
   elements.resultBanner.textContent = isWin ? "贴纸复原完成" : "挑战失败了";
@@ -1038,6 +1284,27 @@ function showResultModal(type) {
   elements.resultText.textContent = isWin ? "获得猫咪手账贴纸，金币 +30" : "猫咪哭唧唧地等你再试一次";
   elements.restartButton.textContent = isWin ? "下一关" : "再玩一次";
   elements.resultModal.classList.remove("hidden");
+}
+
+function getActiveProgressLevelId() {
+  return String(getLevelNumber(activeGameLevel?.id || selectedLevelId));
+}
+
+function calculateLevelCompletionPercent() {
+  const cells = board.flat().filter(Boolean);
+  if (!cells.length) return 0;
+  const locked = cells.filter((cell) => cell.locked).length;
+  return Math.round((locked / cells.length) * 100);
+}
+
+function saveCurrentLevelProgress(percent, completed) {
+  const levelId = getActiveProgressLevelId();
+  const previous = levelProgress[levelId] || {};
+  levelProgress[levelId] = {
+    percent: completed ? 100 : Math.max(previous.percent || 0, percent),
+    completed: Boolean(completed || previous.completed),
+  };
+  saveLevelProgress();
 }
 
 function showToast(message) {
@@ -1131,7 +1398,7 @@ function clampPan(nextPan) {
 function bindEvents() {
   elements.homeTab.addEventListener("click", () => setActiveView("home"));
   elements.generatorTab.addEventListener("click", async () => {
-    await loadFixedLevelIntoGenerator(selectedLevelId);
+    await loadLevelIntoGenerator(selectedLevelId);
     setActiveView("generator");
   });
   elements.gameTab.addEventListener("click", () => {
@@ -1159,15 +1426,21 @@ function bindEvents() {
     elements.showGridInput,
     elements.showSplitInput,
   ].forEach((control) => control.addEventListener("input", syncControls));
-  elements.generateButton.addEventListener("click", generateAndStoreLevel);
-  elements.playGeneratedButton.addEventListener("click", () => {
-    generateAndStoreLevel();
+  elements.generateButton.addEventListener("click", () => {
+    generateAndStoreLevel().catch((error) => {
+      console.error(error);
+      showToast("固定关卡保存失败");
+    });
+  });
+  elements.playGeneratedButton.addEventListener("click", async () => {
+    const level = await generateAndStoreLevel();
+    if (!level) return;
     setActiveView("game");
     initGame().catch((error) => handleGameLoadError(error));
   });
   elements.levelSelect.addEventListener("change", async () => {
     selectedLevelId = elements.levelSelect.value;
-    await loadFixedLevelIntoGenerator(selectedLevelId);
+    await loadLevelIntoGenerator(selectedLevelId);
     const stored = generatedLevels[elements.levelSelect.value];
     if (stored) {
       currentGeneratedLevel = stored;
@@ -1179,19 +1452,38 @@ function bindEvents() {
   elements.homeLevelSelector.addEventListener("click", (event) => {
     const button = event.target.closest(".level-chip");
     if (!button) return;
-    selectedLevelId = button.dataset.level;
-    elements.levelSelect.value = selectedLevelId;
-    const stored = generatedLevels[selectedLevelId];
-    if (stored) {
-      currentGeneratedLevel = stored;
-      renderPatternPreview(stored);
-    }
-    syncHomeLevelButtons();
+    const levelId = button.dataset.level;
+    ensureFixedLevel(levelId).then((level) => {
+      if (!isPlayableLevel(level)) {
+        showToast("固定关卡生成失败，请检查素材");
+        return;
+      }
+      if (!isLevelPlayable(levelId)) {
+        showToast("先完成上一关");
+        return;
+      }
+      selectedLevelId = levelId;
+      elements.levelSelect.value = selectedLevelId;
+      currentGeneratedLevel = level;
+      renderPatternPreview(level);
+      syncHomeLevelButtons();
+      setActiveView("game");
+      initGame().catch((error) => handleGameLoadError(error));
+    }).catch((error) => {
+      console.error(error);
+      showToast("固定关卡生成失败，请检查素材");
+    });
   });
-  elements.startLevelButton.addEventListener("click", () => {
-    setActiveView("game");
-    initGame().catch((error) => handleGameLoadError(error));
-  });
+  if (elements.startLevelButton) {
+    elements.startLevelButton.addEventListener("click", () => {
+      if (!isLevelPlayable(selectedLevelId)) {
+        showToast("先完成上一关");
+        return;
+      }
+      setActiveView("game");
+      initGame().catch((error) => handleGameLoadError(error));
+    });
+  }
   elements.zoomButton.addEventListener("click", () => {
     zoomed = !zoomed;
     elements.zoomSliderWrap.classList.toggle("hidden", !zoomed);
@@ -1232,7 +1524,7 @@ function bindEvents() {
   });
   elements.restartButton.addEventListener("click", () => {
     if (elements.resultPanel.classList.contains("win")) {
-      const nextLevel = Math.min(3, Number(selectedLevelId) + 1);
+      const nextLevel = Math.min(totalHomeLevels, getLevelNumber(selectedLevelId) + 1);
       selectedLevelId = String(nextLevel);
       elements.resultModal.classList.add("hidden");
       setActiveView("home");
@@ -1256,7 +1548,7 @@ async function boot() {
   } else {
     await buildFixedLevels();
     currentGeneratedLevel = generatedLevels[selectedLevelId];
-    await loadFixedLevelIntoGenerator(selectedLevelId);
+    await loadLevelIntoGenerator(selectedLevelId);
     renderPatternPreview(currentGeneratedLevel);
     renderHomePreview(currentGeneratedLevel);
   }

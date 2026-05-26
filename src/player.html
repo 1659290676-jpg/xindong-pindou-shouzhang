@@ -1,10 +1,10 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>心动拼豆手账</title>
-    <link rel="stylesheet" href="./styles.css?v=20260525-fixed-levels-2" />
+    <title>猫猫罐头小铺</title>
+    <link rel="stylesheet" href="./styles.css?v=20260526-entry-ui-layout-3" />
   </head>
   <body class="player-mode">
     <main class="app-shell">
@@ -17,45 +17,58 @@
       <section class="home-view" id="homeView">
         <div class="home-phone">
           <header class="home-status">
-            <button class="home-icon-button" type="button" aria-label="设置">⚙</button>
-            <div class="status-pill"><span class="coin-dot"></span><span id="homeCoin">2</span></div>
-            <div class="status-pill"><span class="heart-dot"></span><span>5/5</span></div>
-            <button class="home-icon-button small" type="button" aria-label="声音">♪</button>
+            <div class="player-card">
+              <img class="player-card-art" src="./assets/ui/level-entry/player-level-crop.png" alt="" />
+              <span class="paw-badge">🐾</span>
+              <strong id="homePlayerLevel">LV.1</strong>
+              <span class="level-exp"><i></i></span>
+            </div>
+            <div class="status-pill coin-status"><span class="coin-dot"></span><span id="homeCoin">0</span></div>
+            <button class="home-icon-button small" type="button" aria-label="设置"></button>
           </header>
 
           <section class="brand-stage">
-            <h1 class="game-logo">心动<br />拼豆手账</h1>
-            <div class="sticker-preview-shell">
-              <img class="home-original-preview hidden" id="homeOriginalPreview" alt="当前关卡原图预览" />
-              <div class="home-pattern-board" id="homePatternBoard"></div>
-            </div>
+            <h1 class="game-logo"><small>NEKO CAN SHOP</small>猫猫罐头小铺</h1>
           </section>
 
           <section class="home-actions">
-            <div class="side-actions left-actions" aria-label="活动入口">
-              <button class="round-action" type="button"><span>⏰</span><b>限时活动</b></button>
-              <button class="round-action" type="button"><span>💬</span><b>加桌有礼</b></button>
-              <button class="round-action" type="button"><span>🎁</span><b>入口奖励</b></button>
-              <button class="round-action" type="button"><span>🍰</span><b>换皮肤</b></button>
-            </div>
-
-            <div class="main-actions">
+            <div class="level-scroll-panel">
               <div class="level-selector" id="homeLevelSelector">
-                <button class="level-chip active" type="button" data-level="1">1</button>
-                <button class="level-chip" type="button" data-level="2">2</button>
-                <button class="level-chip" type="button" data-level="3">3</button>
+                <button class="level-chip active" type="button" data-level="1">
+                  <span class="level-copy"><small>Level</small><b>1</b></span>
+                  <span class="level-art"><img src="./assets/level-1.png" alt="Level 1" /></span>
+                  <span class="level-state">NEXT</span>
+                  <span class="level-progress"><i></i><em>0%</em></span>
+                </button>
+                <button class="level-chip" type="button" data-level="2">
+                  <span class="level-copy"><small>Level</small><b>2</b></span>
+                  <span class="level-art"><img src="./assets/level-2.png" alt="Level 2" /></span>
+                  <span class="level-state locked-state">🔒</span>
+                  <span class="level-progress"><i></i><em>0%</em></span>
+                </button>
+                <button class="level-chip" type="button" data-level="3">
+                  <span class="level-copy"><small>Level</small><b>3</b></span>
+                  <span class="level-art"><img src="./assets/level-3.png" alt="Level 3" /></span>
+                  <span class="level-state locked-state">🔒</span>
+                  <span class="level-progress"><i></i><em>0%</em></span>
+                </button>
+                <button class="level-chip" type="button" data-level="4"><span class="level-copy"><small>Level</small><b>4</b></span><span class="level-art"><img src="./assets/level-4.png" alt="Level 4" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="5"><span class="level-copy"><small>Level</small><b>5</b></span><span class="level-art"><img src="./assets/level-5.png" alt="Level 5" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="6"><span class="level-copy"><small>Level</small><b>6</b></span><span class="level-art"><img src="./assets/level-6.png" alt="Level 6" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="7"><span class="level-copy"><small>Level</small><b>7</b></span><span class="level-art"><img src="./assets/level-7.png" alt="Level 7" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="8"><span class="level-copy"><small>Level</small><b>8</b></span><span class="level-art"><img src="./assets/level-8.png" alt="Level 8" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="9"><span class="level-copy"><small>Level</small><b>9</b></span><span class="level-art"><img src="./assets/level-9.png" alt="Level 9" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
+                <button class="level-chip" type="button" data-level="10"><span class="level-copy"><small>Level</small><b>10</b></span><span class="level-art"><img src="./assets/level-10.png" alt="Level 10" /></span><span class="level-state locked-state">🔒</span><span class="level-progress"><i></i><em>0%</em></span></button>
               </div>
-              <button class="daily-button" type="button">每日挑战 <small>今日免费：1/1</small></button>
-              <button class="start-level-button" id="startLevelButton" type="button">第<span id="homeLevelNumber">1</span>关</button>
-            </div>
-
-            <div class="side-actions right-actions" aria-label="功能入口">
-              <button class="round-action" type="button"><span>🧩</span><b>消除拼豆</b></button>
-              <button class="round-action" type="button"><span>🔤</span><b>猜词</b></button>
-              <button class="round-action" type="button"><span>📘</span><b>我的作品</b></button>
-              <button class="round-action" type="button"><span>🏆</span><b>排行榜</b></button>
             </div>
           </section>
+
+          <nav class="home-bottom-nav" aria-label="主功能">
+            <button class="active" type="button"><img src="./assets/ui/level-entry/nav-home-crop.png" alt="主页" /></button>
+            <button type="button"><img src="./assets/ui/level-entry/nav-shop-crop.png" alt="店铺" /></button>
+            <button type="button"><img src="./assets/ui/level-entry/nav-can-crop.png" alt="罐头" /></button>
+            <button type="button"><img src="./assets/ui/level-entry/nav-journal-crop.png" alt="手账" /></button>
+          </nav>
         </div>
       </section>
 
@@ -76,6 +89,13 @@
                 <option value="1">关卡 1</option>
                 <option value="2">关卡 2</option>
                 <option value="3">关卡 3</option>
+                <option value="4">关卡 4</option>
+                <option value="5">关卡 5</option>
+                <option value="6">关卡 6</option>
+                <option value="7">关卡 7</option>
+                <option value="8">关卡 8</option>
+                <option value="9">关卡 9</option>
+                <option value="10">关卡 10</option>
               </select>
             </label>
 
@@ -167,7 +187,7 @@
         <div class="game-shell">
           <header class="top-bar">
             <div class="coin-pill">金币: <span id="coinCount">0</span></div>
-            <div class="title">心动拼豆手账</div>
+            <div class="title">猫猫罐头小铺</div>
             <div class="timer-pill">⏱ <span id="timer">10:00</span></div>
           </header>
 
@@ -217,6 +237,7 @@
     <script>
       window.XINDONG_PLAYER_MODE = true;
     </script>
-    <script src="./main.js?v=20260525-fixed-levels-2"></script>
+    <script src="./assets/levels/fixed-levels.js?v=20260526-fixed-prebuilt-1"></script>
+    <script src="./main.js?v=20260526-entry-ui-assets-1"></script>
   </body>
 </html>

@@ -100,7 +100,7 @@ select {
 
 .home-phone {
   position: relative;
-  width: min(430px, 100vw);
+  width: min(480px, 100vw);
   height: min(852px, calc(100vh - 48px));
   overflow: hidden;
   background:
@@ -333,11 +333,921 @@ select {
   text-shadow: 0 3px 0 rgba(20, 88, 30, 0.45);
 }
 
+.home-view {
+  background:
+    repeating-linear-gradient(18deg, transparent 0 54px, rgba(255, 236, 198, 0.72) 55px 80px, transparent 81px 132px),
+    #fff4df;
+}
+
+.home-phone {
+  display: grid;
+  grid-template-rows: 72px 126px minmax(0, 1fr) 92px;
+  padding: 0 12px 10px;
+  background:
+    radial-gradient(circle at 8% 22%, #e85f4d 0 7px, transparent 8px),
+    radial-gradient(circle at 89% 32%, #f7c55c 0 6px, transparent 7px),
+    radial-gradient(circle at 76% 70%, #65a8c9 0 6px, transparent 7px),
+    radial-gradient(circle at 18% 76%, rgba(78, 44, 32, 0.92) 0 3px, transparent 4px),
+    linear-gradient(#fff6df, #ffe7ba);
+  border: 4px solid #4a271e;
+  border-top-width: 3px;
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+}
+
+.home-status {
+  height: auto;
+  grid-template-columns: minmax(148px, 1fr) 132px 48px;
+  padding: 10px 0 8px;
+}
+
+.player-card,
+.coin-status {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 3px solid #4a271e;
+  border-radius: 16px;
+  background: rgba(255, 246, 225, 0.94);
+  box-shadow: 0 3px 0 rgba(74, 39, 30, 0.16);
+}
+
+.player-card strong {
+  font-size: 23px;
+  color: #3f2118;
+}
+
+.paw-badge {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #513324;
+  font-size: 22px;
+}
+
+.level-exp {
+  flex: 1;
+  height: 12px;
+  overflow: hidden;
+  border: 2px solid #4a271e;
+  border-radius: 999px;
+  background: #5b3628;
+}
+
+.level-exp i {
+  display: block;
+  width: 36%;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffd36b;
+}
+
+.coin-status {
+  justify-content: center;
+  min-width: 0;
+  color: #3f2118;
+  font-size: 20px;
+}
+
+.home-icon-button.small {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #4a271e;
+  background: #84cff1;
+  color: #4a271e;
+  font-size: 24px;
+}
+
+.brand-stage {
+  gap: 0;
+  padding-top: 10px;
+}
+
+.game-logo {
+  width: min(350px, 92%);
+  padding: 10px 14px 13px;
+  transform: rotate(-2deg);
+  border-radius: 26px;
+  background: #4a271e;
+  color: #ffe36b;
+  font-size: clamp(34px, 9vw, 48px);
+  line-height: 1.05;
+  text-shadow:
+    0 4px 0 #e86148,
+    3px 4px 0 #e86148,
+    -3px 4px 0 #e86148,
+    0 8px 0 rgba(74, 39, 30, 0.24);
+  -webkit-text-stroke: 1px rgba(255, 244, 222, 0.68);
+  box-shadow: 0 0 0 8px #ffffff, 0 7px 0 rgba(74, 39, 30, 0.24);
+}
+
+.game-logo small {
+  display: block;
+  margin-bottom: 3px;
+  color: #fff5cf;
+  font-size: 17px;
+  letter-spacing: 2px;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.home-actions {
+  position: static;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(330px, 76%) 1fr;
+  gap: 10px;
+  padding: 0 2px;
+  align-items: stretch;
+}
+
+.level-scroll-panel {
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px 10px 12px;
+  border: 4px solid #4a271e;
+  border-radius: 18px;
+  background: rgba(255, 231, 185, 0.72);
+}
+
+.level-selector {
+  height: 100%;
+  display: grid;
+  gap: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  padding: 2px 2px 10px 0;
+}
+
+.level-selector::-webkit-scrollbar {
+  display: none;
+}
+
+.level-selector::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.level-chip {
+  width: 100%;
+  min-height: 154px;
+  height: auto;
+  display: grid;
+  grid-template-columns: clamp(42px, 13%, 54px) minmax(0, 1fr) clamp(46px, 16%, 66px);
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: #4a271e;
+  text-align: left;
+}
+
+.level-chip:disabled {
+  color: #4a271e;
+}
+
+.level-chip.active {
+  color: #4a271e;
+  background: rgba(255, 251, 235, 0.58);
+  box-shadow: inset 0 0 0 2px rgba(74, 39, 30, 0.18), 0 4px 0 rgba(74, 39, 30, 0.08);
+}
+
+.level-chip.locked {
+  opacity: 0.76;
+  cursor: default;
+}
+
+.level-chip.next {
+  opacity: 0.92;
+}
+
+.level-chip.complete .level-art::after {
+  content: "COMPLETE";
+  position: absolute;
+  right: -2px;
+  top: 12px;
+  padding: 3px 7px;
+  border: 3px solid #4a271e;
+  border-radius: 999px;
+  background: rgba(255, 242, 214, 0.9);
+  color: #5c2f22;
+  font-size: 12px;
+  font-weight: 900;
+  transform: rotate(-12deg);
+}
+
+.level-copy small,
+.level-copy b {
+  display: block;
+}
+
+.level-copy small {
+  font-size: clamp(11px, 3vw, 13px);
+  font-weight: 900;
+}
+
+.level-copy b {
+  font-size: clamp(36px, 10vw, 48px);
+  line-height: 1;
+}
+
+.level-art {
+  position: relative;
+  min-height: 132px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 4px 0 rgba(74, 39, 30, 0.16));
+}
+
+.level-art img {
+  width: min(100%, 168px);
+  max-height: 142px;
+  object-fit: contain;
+}
+
+.can-art {
+  width: min(156px, 100%);
+  height: clamp(84px, 24vw, 104px);
+  position: relative;
+  border: 4px solid #4a271e;
+  border-radius: 50% / 16px;
+  background:
+    radial-gradient(ellipse at 50% 0, #d7dde0 0 36%, transparent 37%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.38) 0 12%, transparent 13%),
+    linear-gradient(#eb6b54 0 36%, #ffe3a4 37% 63%, #d95142 64%);
+  color: #fff2b8;
+  font-size: clamp(16px, 4.5vw, 21px);
+  font-weight: 900;
+  text-align: center;
+  line-height: clamp(84px, 24vw, 104px);
+  text-shadow: 0 2px 0 #7b3326;
+}
+
+.can-art::before,
+.can-art::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 12px;
+  border: 3px solid #6a5045;
+  border-radius: 50%;
+  background: linear-gradient(#e9eef0, #aeb6b8);
+}
+
+.can-art::before {
+  top: -7px;
+}
+
+.can-art::after {
+  bottom: -7px;
+}
+
+.can-blue {
+  background:
+    radial-gradient(ellipse at 50% 0, #d7dde0 0 36%, transparent 37%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.38) 0 12%, transparent 13%),
+    linear-gradient(#61b3d0 0 36%, #fff0bf 37% 63%, #3f8fb4 64%);
+}
+
+.can-gold {
+  background:
+    radial-gradient(ellipse at 50% 0, #d7dde0 0 36%, transparent 37%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.38) 0 12%, transparent 13%),
+    linear-gradient(#d99a43 0 36%, #fff0bf 37% 63%, #b8752f 64%);
+}
+
+.can-mint {
+  background:
+    radial-gradient(ellipse at 50% 0, #d7dde0 0 36%, transparent 37%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.38) 0 12%, transparent 13%),
+    linear-gradient(#8bcfb5 0 36%, #fff0bf 37% 63%, #5fac93 64%);
+}
+
+.level-state {
+  justify-self: center;
+  padding: 4px 5px;
+  border-radius: 8px;
+  color: #4a271e;
+  font-weight: 900;
+  font-size: clamp(12px, 3.4vw, 15px);
+  text-align: center;
+}
+
+.level-chip.complete .level-state {
+  color: #8b4a2f;
+  font-size: 12px;
+}
+
+.locked-state {
+  width: clamp(38px, 11vw, 46px);
+  height: clamp(38px, 11vw, 46px);
+  display: grid;
+  place-items: center;
+  border: 4px solid #4a271e;
+  border-radius: 14px;
+  background: #ffd46a;
+  font-size: clamp(20px, 5vw, 24px);
+  box-shadow: inset 0 0 0 3px rgba(255, 246, 221, 0.48);
+}
+
+.level-progress {
+  grid-column: 2 / 4;
+  height: 24px;
+  display: none;
+  align-items: center;
+  padding: 3px;
+  border: 3px solid #4a271e;
+  border-radius: 999px;
+  background: #fff0cf;
+}
+
+.level-progress.visible {
+  display: flex;
+}
+
+.level-progress i {
+  height: 100%;
+  width: var(--progress, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffd15e, #f07a43);
+}
+
+.level-progress em {
+  margin-left: 8px;
+  min-width: 32px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.home-cat-panel {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  align-items: end;
+  justify-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.cat-helper {
+  position: relative;
+  align-self: center;
+  width: 112px;
+  height: 146px;
+  border-radius: 52px 52px 34px 34px;
+  background: #4a3029;
+  box-shadow: 0 0 0 7px #fff, 0 8px 0 rgba(74, 39, 30, 0.18);
+}
+
+.cat-helper::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: -10px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(173, 120, 61, 0.22);
+}
+
+.cat-ear {
+  position: absolute;
+  top: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #4a3029;
+  transform: rotate(45deg);
+}
+
+.cat-ear.left {
+  left: 12px;
+}
+
+.cat-ear.right {
+  right: 12px;
+}
+
+.cat-eye {
+  position: absolute;
+  top: 52px;
+  width: 20px;
+  height: 24px;
+  border: 4px solid #f3bd4c;
+  border-radius: 50%;
+  background: #2b211d;
+}
+
+.cat-eye.left {
+  left: 27px;
+}
+
+.cat-eye.right {
+  right: 27px;
+}
+
+.cat-nose {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  width: 9px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c0b4a8;
+  transform: translateX(-50%);
+}
+
+.cat-scarf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 20px;
+  height: 28px;
+  border-radius: 0 0 26px 26px;
+  background: #d85b45;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.home-cat-panel p {
+  min-height: 38px;
+  margin: 0;
+  color: #4a271e;
+  font-weight: 900;
+  text-align: center;
+  font-size: 13px;
+}
+
+.home-cat-panel .start-level-button {
+  width: 118px;
+  height: 58px;
+  border-width: 3px;
+  border-color: #ffffff;
+  border-radius: 16px;
+  font-size: 20px;
+}
+
+.home-bottom-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.home-bottom-nav button {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border: 4px solid #4a271e;
+  border-radius: 16px;
+  background: #fff6df;
+  color: #4a271e;
+  font-weight: 900;
+  box-shadow: 0 4px 0 rgba(74, 39, 30, 0.16);
+}
+
+.home-bottom-nav button.active {
+  background: #fff0c2;
+}
+
+.home-bottom-nav span {
+  font-size: 27px;
+  line-height: 1;
+}
+
+.home-bottom-nav b {
+  font-size: 15px;
+}
+
 .generator-view {
   min-height: 0;
   display: grid;
   grid-template-rows: auto 1fr;
   overflow: hidden;
+}
+
+/* Level entry art layers */
+.home-view {
+  background: #fff4df;
+}
+
+.home-phone {
+  position: relative;
+  overflow: hidden;
+  background: #fff4df url("./assets/ui/level-entry/home-bg.png") center / cover no-repeat;
+  border: 0;
+  border-radius: 0;
+}
+
+.player-card,
+.coin-status,
+.home-icon-button.small,
+.home-bottom-nav button {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent;
+}
+
+.player-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: url("./assets/ui/level-entry/player-level-crop.png") center / contain no-repeat;
+}
+
+.player-card-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.player-card .paw-badge,
+.player-card .level-exp,
+.coin-status .coin-dot {
+  display: none;
+}
+
+.player-card strong {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  transform: translate(-12%, -50%);
+  color: #3f2118;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.coin-status {
+  position: relative;
+  justify-content: flex-end;
+  padding: 0 18px 0 58px;
+  background: url("./assets/ui/level-entry/coin-panel-crop.png") center / contain no-repeat;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.coin-status span {
+  min-width: 54px;
+  color: #3f2118;
+  font-weight: 900;
+  text-align: center;
+}
+
+.home-icon-button.small {
+  background: url("./assets/ui/level-entry/settings-crop.png") center / contain no-repeat;
+  color: transparent;
+}
+
+.home-icon-button.small img {
+  display: none;
+}
+
+.game-logo {
+  width: min(360px, 92%);
+  height: clamp(78px, 20vw, 98px);
+  padding: 0;
+  transform: none;
+  background: url("./assets/ui/level-entry/title-crop.png") center / contain no-repeat;
+  border-radius: 0;
+  color: transparent;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+  box-shadow: none;
+}
+
+.game-logo small {
+  display: none;
+}
+
+.level-chip.complete .level-art::after {
+  content: "";
+  width: clamp(56px, 15vw, 78px);
+  height: clamp(56px, 15vw, 78px);
+  border: 0;
+  border-radius: 0;
+  background: url("./assets/ui/level-entry/stamp-complete-crop.png") center / contain no-repeat;
+  color: transparent;
+  box-shadow: none;
+  transform: rotate(-12deg);
+  right: clamp(-8px, -1vw, -2px);
+  top: clamp(4px, 2vw, 12px);
+}
+
+.level-chip.complete .level-state {
+  visibility: hidden;
+}
+
+.locked-state {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.level-lock-icon {
+  width: clamp(34px, 10vw, 46px);
+  height: clamp(42px, 12vw, 54px);
+  object-fit: contain;
+}
+
+.home-bottom-nav button {
+  min-height: 84px;
+  padding: 0;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.home-bottom-nav button:nth-child(1) {
+  background-image: url("./assets/ui/level-entry/nav-home-crop.png");
+}
+
+.home-bottom-nav button:nth-child(2) {
+  background-image: url("./assets/ui/level-entry/nav-shop-crop.png");
+}
+
+.home-bottom-nav button:nth-child(3) {
+  background-image: url("./assets/ui/level-entry/nav-can-crop.png");
+}
+
+.home-bottom-nav button:nth-child(4) {
+  background-image: url("./assets/ui/level-entry/nav-journal-crop.png");
+}
+
+.home-bottom-nav span,
+.home-bottom-nav b {
+  display: none;
+}
+
+/* Latest level entry composition */
+.home-view {
+  background: #fff4df url("./assets/ui/level-entry/home-bg-alt.png") center / cover no-repeat;
+}
+
+.home-phone {
+  grid-template-rows: 88px 118px minmax(0, 1fr) 98px;
+  padding: 0 18px 10px;
+  background: transparent url("./assets/ui/level-entry/home-bg.png") center / 100% 100% no-repeat;
+}
+
+.home-status {
+  grid-template-columns: clamp(120px, 38vw, 184px) clamp(110px, 31vw, 164px) clamp(50px, 13vw, 72px);
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0 4px;
+}
+
+.player-card {
+  height: clamp(50px, 15vw, 72px);
+  background-size: contain;
+}
+
+.player-card strong {
+  top: 39%;
+  transform: translate(-10%, -50%);
+  font-size: clamp(24px, 5.6vw, 28px);
+}
+
+.coin-status {
+  height: clamp(46px, 13vw, 62px);
+  padding: 0 clamp(10px, 3vw, 18px) 0 clamp(38px, 12vw, 64px);
+  font-size: clamp(20px, 4.8vw, 24px);
+}
+
+.home-icon-button.small {
+  width: clamp(50px, 13vw, 72px);
+  height: clamp(50px, 13vw, 72px);
+}
+
+.brand-stage {
+  padding-top: 0;
+  align-content: center;
+}
+
+.game-logo {
+  width: min(346px, 86%);
+  height: clamp(80px, 20vw, 94px);
+}
+
+.home-actions {
+  grid-template-columns: minmax(268px, 61%) 1fr;
+  gap: 0;
+  padding: 0 0 0 12px;
+  align-items: stretch;
+}
+
+.level-scroll-panel {
+  align-self: stretch;
+  width: 100%;
+  padding: 12px 7px 12px;
+  border-width: 4px;
+  border-radius: 14px;
+}
+
+.level-selector {
+  gap: 10px;
+  padding: 0 0 8px;
+}
+
+.level-chip {
+  min-height: 174px;
+  grid-template-columns: clamp(38px, 13%, 44px) minmax(0, 1fr) clamp(36px, 13%, 46px);
+  gap: 0;
+  padding: 8px 0;
+}
+
+.level-copy small {
+  font-size: 13px;
+}
+
+.level-copy b {
+  font-size: clamp(34px, 8vw, 42px);
+}
+
+.level-art {
+  width: 100%;
+  max-width: 178px;
+  justify-self: center;
+}
+
+.level-state {
+  padding: 0;
+  font-size: clamp(13px, 3.6vw, 16px);
+}
+
+.level-lock-icon {
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(40px, 10vw, 50px);
+}
+
+.home-bottom-nav {
+  gap: 6px;
+  padding: 8px 0 0;
+}
+
+.home-bottom-nav button {
+  min-height: 88px;
+  background-image: none !important;
+}
+
+.home-bottom-nav button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Reference-aligned 9:16 pass */
+.home-view {
+  padding: 0;
+  background-size: auto 100%;
+}
+
+.home-phone {
+  width: min(480px, 100vw, calc((100vh - 48px) * 9 / 16));
+  height: auto;
+  max-height: calc(100vh - 48px);
+  aspect-ratio: 9 / 16;
+  grid-template-rows: 84px 104px minmax(0, 1fr) 92px;
+  padding: 0 18px 9px;
+}
+
+.player-mode .home-phone {
+  width: min(480px, 100vw, calc(100vh * 9 / 16));
+  max-height: 100vh;
+}
+
+.home-status {
+  width: calc(100% + 18px);
+  margin-left: -9px;
+  grid-template-columns: clamp(138px, 37vw, 178px) clamp(92px, 24vw, 132px) clamp(58px, 13vw, 72px);
+  gap: 6px;
+  padding: 10px 0 0;
+}
+
+.player-card {
+  justify-self: start;
+  width: 100%;
+  height: clamp(58px, 14vw, 72px);
+  transform: translateX(-3px);
+}
+
+.coin-status {
+  justify-self: center;
+  height: clamp(38px, 10vw, 50px);
+  padding: 0 clamp(8px, 2.4vw, 14px) 0 clamp(32px, 8vw, 48px);
+  font-size: clamp(17px, 4vw, 21px);
+}
+
+.coin-status span {
+  min-width: 42px;
+}
+
+.home-icon-button.small {
+  justify-self: end;
+  width: clamp(58px, 13vw, 72px);
+  height: clamp(58px, 13vw, 72px);
+  transform: translateX(3px);
+}
+
+.brand-stage {
+  align-content: start;
+  padding-top: 0;
+  transform: translateY(-10px);
+}
+
+.game-logo {
+  width: min(340px, 84%);
+  height: clamp(78px, 19vw, 92px);
+}
+
+.home-actions {
+  grid-template-columns: minmax(286px, 70%) 1fr;
+  padding: 0 0 0 12px;
+}
+
+.level-scroll-panel {
+  padding: 10px 5px 10px;
+}
+
+.locked-state {
+  background: transparent;
+  font-size: 0;
+}
+
+.level-selector {
+  gap: 8px;
+}
+
+.level-chip {
+  min-height: 164px;
+  grid-template-columns: clamp(32px, 11%, 38px) minmax(0, 1fr) clamp(30px, 10%, 38px);
+  gap: 0;
+  padding: 7px 0;
+}
+
+.level-copy {
+  justify-self: end;
+  transform: translateX(4px);
+}
+
+.level-copy small {
+  font-size: 12px;
+}
+
+.level-copy b {
+  font-size: clamp(31px, 7.5vw, 38px);
+}
+
+.level-art {
+  max-width: 184px;
+}
+
+.level-state {
+  justify-self: start;
+  transform: translateX(-5px);
+}
+
+.level-lock-icon {
+  width: clamp(28px, 7vw, 36px);
+  height: clamp(36px, 9vw, 46px);
+  object-fit: contain;
+}
+
+.home-bottom-nav {
+  width: calc(100% + 18px);
+  margin-left: -9px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  padding-top: 6px;
+}
+
+.home-bottom-nav button {
+  min-height: 78px;
+  transform: scale(0.8);
+}
+
+.home-bottom-nav button:first-child {
+  transform-origin: left center;
+}
+
+.home-bottom-nav button:last-child {
+  transform-origin: right center;
 }
 
 .generator-header {
