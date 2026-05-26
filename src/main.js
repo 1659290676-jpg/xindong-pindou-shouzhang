@@ -210,6 +210,7 @@ function colorDistance(a, b) {
 }
 
 function loadStoredLevels() {
+  if (playerMode) return {};
   try {
     const parsed = JSON.parse(localStorage.getItem(storageKey)) || {};
     Object.keys(parsed).forEach((key) => {
@@ -367,14 +368,14 @@ async function loadFixedLevelIntoGenerator(levelId) {
 }
 
 async function ensureFixedLevel(levelId) {
-  const normalized = normalizeLevel(generatedLevels[levelId]);
-  if (isPlayableLevel(normalized)) return normalized;
-
   const prebuilt = normalizeLevel(fixedLevelData[levelId]);
   if (isPlayableLevel(prebuilt)) {
     generatedLevels[levelId] = prebuilt;
     return prebuilt;
   }
+
+  const normalized = normalizeLevel(generatedLevels[levelId]);
+  if (isPlayableLevel(normalized)) return normalized;
 
   const config = fixedLevelConfigs[levelId];
   if (!config) return null;
@@ -1538,9 +1539,9 @@ function bindEvents() {
 
 async function boot() {
   bindEvents();
-  sourceImage = await loadImage(defaultImageSrc);
-  sourceImageName = "level-cat.png";
-  sourceImageDataUrl = defaultImageSrc;
+  sourceImageName = "level-1.png";
+  sourceImageDataUrl = fixedLevelConfigs["1"]?.src || null;
+  sourceImage = sourceImageDataUrl ? await loadImage(sourceImageDataUrl) : null;
   syncControls();
   if (playerMode) {
     await buildFixedLevels();
