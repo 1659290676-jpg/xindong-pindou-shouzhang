@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>昨日工作日报｜心动拼豆手账 2026-05-25</title>
+    <style>
+      :root {
+        --paper: #fffaf0;
+        --ink: #3f2d25;
+        --muted: #7a665a;
+        --line: #ecd9ba;
+        --gold: #f7bd43;
+        --blue: #8ed7ef;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+        line-height: 1.75;
+        background:
+          linear-gradient(rgba(213, 191, 151, 0.2) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(213, 191, 151, 0.2) 1px, transparent 1px),
+          #fffdf7;
+        background-size: 32px 32px;
+      }
+
+      main {
+        width: min(920px, calc(100% - 32px));
+        margin: 32px auto;
+        padding: 34px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 18px 42px rgba(84, 57, 34, 0.12);
+      }
+
+      header {
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--line);
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(28px, 5vw, 44px);
+        line-height: 1.15;
+      }
+
+      h2 {
+        margin: 34px 0 12px;
+        padding-left: 12px;
+        border-left: 6px solid var(--gold);
+        font-size: 24px;
+      }
+
+      h3 {
+        margin: 22px 0 8px;
+        font-size: 18px;
+      }
+
+      p {
+        margin: 8px 0;
+      }
+
+      ul {
+        margin: 8px 0 8px 22px;
+        padding: 0;
+      }
+
+      li {
+        margin: 4px 0;
+      }
+
+      code,
+      .link-box {
+        font-family: Consolas, "Courier New", monospace;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: var(--muted);
+      }
+
+      .pill {
+        padding: 5px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+      }
+
+      .summary {
+        margin-top: 18px;
+        padding: 16px 18px;
+        background: #fff3c8;
+        border: 1px solid #efd17d;
+        border-radius: 10px;
+        font-weight: 700;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      .card {
+        padding: 14px;
+        background: #fffdf8;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .card b {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .link-box {
+        display: block;
+        margin: 10px 0;
+        padding: 12px;
+        overflow-wrap: anywhere;
+        color: #1f5f72;
+        background: #edfaff;
+        border: 1px solid var(--blue);
+        border-radius: 8px;
+      }
+
+      .footer-note {
+        margin-top: 34px;
+        padding-top: 18px;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+      }
+
+      @media (max-width: 640px) {
+        main {
+          width: min(100% - 20px, 920px);
+          margin: 10px auto;
+          padding: 22px 18px;
+          border-radius: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>昨日工作日报</h1>
+        <div class="meta">
+          <span class="pill">日期：2026-05-25</span>
+          <span class="pill">项目：《心动拼豆手账》H5 Demo</span>
+          <span class="pill">阶段：玩法原型与对外试玩链接搭建</span>
+        </div>
+        <p class="summary">
+          昨日核心成果：把《心动拼豆手账》从玩法想法推进成“可生成关卡、可试玩、可对外分享链接”的 H5 Demo。
+        </p>
+      </header>
+
+      <section>
+        <h2>1. 昨日目标</h2>
+        <p>
+          昨日主要目标是把“颜色归位拼豆”的玩法从想法推进到可运行 Demo，并完成基础工作区、关卡生成器、试玩游戏、对外发布链接。
+        </p>
+      </section>
+
+      <section>
+        <h2>2. 完成内容</h2>
+        <div class="grid">
+          <div class="card">
+            <b>项目工作区搭建</b>
+            <p>创建并整理 `docs/`、`assets/`、`notes/`、`src/` 等目录，建立 PRD、素材、Bug、学习笔记和代码分区。</p>
+          </div>
+          <div class="card">
+            <b>产品规则梳理</b>
+            <p>确定“颜色归位拼豆”核心循环：错位拼豆进入暂存格，再放回正确底图位置，全部复原后通关获得贴纸。</p>
+          </div>
+          <div class="card">
+            <b>PRD 与开发计划</b>
+            <p>整理 `PRD.md`、`Demo开发计划.md`、`底图识别方案.md`，记录玩法、关卡、UI、生成器和验收标准。</p>
+          </div>
+          <div class="card">
+            <b>图片关卡生成器</b>
+            <p>支持导入图片、设置尺寸、颜色数、缩放、偏移、亮度、对比度和饱和度，并生成拼豆底图。</p>
+          </div>
+          <div class="card">
+            <b>试玩游戏核心玩法</b>
+            <p>完成棋盘、暂存格、拼豆拾取、归位、锁定、错放扣时、倒计时、成功和失败弹窗。</p>
+          </div>
+          <div class="card">
+            <b>批量拾取与回填</b>
+            <p>点击棋盘可拾取相邻同色连通组，单次最多 12 个；正确回填时可批量填充相邻同色目标格。</p>
+          </div>
+          <div class="card">
+            <b>放大镜功能</b>
+            <p>实现 100%-150% 缩放、拖动平移、放大状态下仍可点击拼豆，并且只有再次点击放大镜才退出。</p>
+          </div>
+          <div class="card">
+            <b>停滞提示</b>
+            <p>玩家 15 秒无操作时，短暂高亮最多 6 个未对应底色的拼豆，帮助继续推进。</p>
+          </div>
+          <div class="card">
+            <b>对内/对外入口拆分</b>
+            <p>新增玩家入口 `player.html`，只保留关卡入口和试玩游戏；开发者入口 `index.html` 保留关卡生成器。</p>
+          </div>
+          <div class="card">
+            <b>固定三关素材</b>
+            <p>第 1/2/3 关固定为 `level-1.png`、`level-2.png`、`level-3.png`，统一使用 30×30、10 色配置。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. GitHub 与发布</h2>
+        <p>初始化 Git 仓库并创建 GitHub 仓库，配置 GitHub Pages 自动发布，将 `src/` 发布为静态网站。</p>
+        <p>GitHub 仓库：</p>
+        <a class="link-box" href="https://github.com/1659290676-jpg/xindong-pindou-shouzhang">https://github.com/1659290676-jpg/xindong-pindou-shouzhang</a>
+        <p>对内开发者页面：</p>
+        <a class="link-box" href="https://1659290676-jpg.github.io/xindong-pindou-shouzhang/">https://1659290676-jpg.github.io/xindong-pindou-shouzhang/</a>
+        <p>对外玩家页面：</p>
+        <a class="link-box" href="https://1659290676-jpg.github.io/xindong-pindou-shouzhang/player.html">https://1659290676-jpg.github.io/xindong-pindou-shouzhang/player.html</a>
+      </section>
+
+      <section>
+        <h2>4. Bug 修复记录</h2>
+        <ul>
+          <li>修复图片生成器无法稳定生成关卡图案的问题。</li>
+          <li>修复游戏加载失败只显示泛化错误的问题，增加更明确的排查记录。</li>
+          <li>修复旧缓存关卡数据导致初始化失败的问题。</li>
+          <li>修复空白背景格误读 `target` 导致崩溃的问题。</li>
+          <li>优化开局同色连通块过大、一点就填满暂存格的问题。</li>
+          <li>修复放大镜点击拼豆时误退出放大的问题。</li>
+          <li>移除正确归位后的绿色圈，减少视觉干扰。</li>
+          <li>修复 GitHub Pages 首次部署配置问题。</li>
+          <li>通过版本号处理浏览器缓存导致新关卡素材不刷新的问题。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. 当前阶段成果</h2>
+        <ul>
+          <li>有完整工作区。</li>
+          <li>有 PRD 和 Demo 开发计划。</li>
+          <li>有图片关卡生成器。</li>
+          <li>有可玩的拼豆归位 Demo。</li>
+          <li>有固定 1/2/3 关。</li>
+          <li>有对内开发者页面。</li>
+          <li>有对外玩家页面。</li>
+          <li>有 GitHub 仓库和 GitHub Pages 可试玩链接。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. 当前未完成事项</h2>
+        <ul>
+          <li>关卡入口 UI 优化。</li>
+          <li>游戏界面 UI 优化。</li>
+          <li>挑战失败界面优化。</li>
+          <li>成功结算界面优化。</li>
+          <li>道具实际功能。</li>
+          <li>关卡生成器导出/导入固定关卡数据。</li>
+          <li>玩家版正式包装。</li>
+          <li>Cocos Creator 迁移方案。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. 今日衔接事项</h2>
+        <p>2026-05-26 已开始处理：</p>
+        <ul>
+          <li>倒计时只在试玩游戏界面运行。</li>
+          <li>离开试玩游戏时清理计时器。</li>
+          <li>第 1/2/3 关时长改为 10/15/20 分钟。</li>
+          <li>这些玩法改动先保留在本地，暂不统一上传 GitHub。</li>
+        </ul>
+      </section>
+
+      <p class="footer-note">
+        本日报用于阶段同步和对外沟通，详细开发交接请查看项目内 `docs/阶段交接说明.md`。
+      </p>
+    </main>
+  </body>
+</html>
