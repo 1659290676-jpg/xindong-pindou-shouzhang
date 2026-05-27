@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>猫猫罐头小铺</title>
-    <link rel="stylesheet" href="./styles.css?v=20260527-entry-ui-layout-21" />
+    <link rel="stylesheet" href="./styles.css?v=20260527-success-modal-4" />
   </head>
   <body class="player-mode">
     <main class="app-shell">
@@ -186,15 +186,16 @@
       <section class="game-view hidden" id="gameView">
         <div class="game-shell">
           <header class="top-bar">
-            <div class="coin-pill">金币: <span id="coinCount">0</span></div>
-            <div class="title">猫猫罐头小铺</div>
-            <div class="timer-pill">⏱ <span id="timer">10:00</span></div>
+            <div class="game-level-pill"><span id="gamePlayerLevelLabel">LV.1</span></div>
+            <div class="game-stage-label" id="gameLevelLabel">第1关</div>
+            <div class="coin-pill"><span id="coinCount">0</span></div>
+            <div class="timer-pill"><span id="timer">10:00</span></div>
+            <button class="game-back-button" id="returnHomeButton" type="button" aria-label="返回主页"></button>
           </header>
 
           <section class="board-section" id="boardSection">
-            <button class="zoom-button" id="zoomButton" type="button" aria-label="放大棋盘">🔍</button>
+            <button class="zoom-button" id="zoomButton" type="button" aria-label="放大棋盘"></button>
             <label class="zoom-slider hidden" id="zoomSliderWrap">
-              <span>放大</span>
               <input id="zoomScaleInput" type="range" min="100" max="150" value="120" />
             </label>
             <div class="board-window" id="boardWindow">
@@ -207,9 +208,9 @@
           </section>
 
           <footer class="tool-bar" aria-label="道具栏">
-            <button class="tool-button" type="button" aria-label="框选归位">🎯</button>
-            <button class="tool-button" type="button" aria-label="清空槽位">🧹</button>
-            <button class="tool-button" type="button" aria-label="消色">🌈</button>
+            <button class="tool-button area-tool-button" type="button" data-tool="area" aria-label="框选归位"></button>
+            <button class="tool-button clear-tray-tool-button" type="button" data-tool="clear-tray" aria-label="清空槽位"></button>
+            <button class="tool-button clear-color-tool-button" type="button" data-tool="clear-color" aria-label="消色"></button>
           </footer>
         </div>
       </section>
@@ -238,6 +239,6 @@
       window.XINDONG_PLAYER_MODE = true;
     </script>
     <script src="./assets/levels/fixed-levels.js?v=20260526-fixed-player-levels-2"></script>
-    <script src="./main.js?v=20260526-fixed-player-levels-2"></script>
+    <script src="./main.js?v=20260527-success-modal-4"></script>
   </body>
 </html>

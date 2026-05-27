@@ -111,6 +111,10 @@ const elements = {
   tray: document.getElementById("tray"),
   timer: document.getElementById("timer"),
   coinCount: document.getElementById("coinCount"),
+  gameLevelLabel: document.getElementById("gameLevelLabel"),
+  gamePlayerLevelLabel: document.getElementById("gamePlayerLevelLabel"),
+  returnHomeButton: document.getElementById("returnHomeButton"),
+  toolButtons: document.querySelectorAll(".tool-button[data-tool]"),
   toast: document.getElementById("toast"),
   resultModal: document.getElementById("resultModal"),
   resultPanel: document.getElementById("resultPanel"),
@@ -151,6 +155,8 @@ let correctStreak = 0;
 let idleHintTimerId = null;
 let hintClearTimerId = null;
 let hintCells = new Set();
+let activeTool = null;
+let areaToolCenter = null;
 
 function rgbToHex(r, g, b) {
   return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
@@ -754,6 +760,11 @@ function getLevelTimeLimit(levelId = selectedLevelId) {
   return baseLevelTime + (levelNumber - 1) * levelTimeStep;
 }
 
+function getPlayerLevelLabel() {
+  const completedCount = Object.values(levelProgress).filter((progress) => progress?.completed === true).length;
+  return `LV.${1 + Math.floor(completedCount / 2)}`;
+}
+
 function stopGameTimers() {
   window.clearInterval(timerId);
   timerId = null;
@@ -940,11 +951,15 @@ async function initGame() {
 
   tray = Array.from({ length: traySize }, () => null);
   selectedTrayIndex = null;
+  activeTool = null;
+  areaToolCenter = null;
   correctStreak = 0;
   secondsLeft = getLevelTimeLimit(activeGameLevel.id || selectedLevelId);
   won = false;
   elements.resultModal.classList.add("hidden");
   elements.coinCount.textContent = "0";
+  if (elements.gameLevelLabel) elements.gameLevelLabel.textContent = `第${getLevelNumber(activeGameLevel.id || selectedLevelId)}关`;
+  if (elements.gamePlayerLevelLabel) elements.gamePlayerLevelLabel.textContent = getPlayerLevelLabel();
   elements.board.style.setProperty("--cols", activeGameLevel.cols);
   elements.board.style.setProperty("--rows", activeGameLevel.rows);
   centerBoard();
@@ -998,11 +1013,18 @@ function renderGame() {
           bead.style.setProperty("--bead-color", data.current.color);
           cell.appendChild(bead);
         }
+        cell.addEventListener("pointerenter", () => {
+          if (activeTool === "area") {
+            areaToolCenter = { row, col };
+            renderAreaToolFrame();
+          }
+        });
         cell.addEventListener("click", () => handleBoardClick(row, col));
       }
       elements.board.appendChild(cell);
     }
   }
+  if (activeTool === "area" && areaToolCenter) renderAreaToolFrame();
 
   elements.tray.innerHTML = "";
   tray.forEach((color, index) => {
@@ -1021,12 +1043,29 @@ function renderGame() {
   });
 
   applyBoardTransform();
+  updateToolButtons();
   checkWin();
+}
+
+function renderAreaToolFrame() {
+  elements.board.querySelector(".area-tool-frame")?.remove();
+  const bounds = getAreaBounds(areaToolCenter.row, areaToolCenter.col);
+  const frame = document.createElement("span");
+  frame.className = "area-tool-frame";
+  frame.style.setProperty("--area-col", bounds.startCol);
+  frame.style.setProperty("--area-row", bounds.startRow);
+  frame.style.setProperty("--area-cols", bounds.cols);
+  frame.style.setProperty("--area-rows", bounds.rows);
+  elements.board.appendChild(frame);
 }
 
 function handleBoardClick(row, col) {
   if (won || secondsLeft === 0) return;
   resetIdleHintTimer();
+  if (activeTool === "area") {
+    useAreaReturnTool(row, col);
+    return;
+  }
   const cell = board[row][col];
   if (!cell?.target || cell.locked) {
     showToast("这里不能操作");
@@ -1244,12 +1283,206 @@ function findFillableTargetGroup(startCell, colorKey) {
 
 function handleTrayClick(index) {
   if (won || secondsLeft === 0) return;
+  if (activeTool === "clear-tray") {
+    useClearTrayTool(index);
+    return;
+  }
   if (!tray[index]) {
     showToast("空槽位");
     return;
   }
   selectedTrayIndex = selectedTrayIndex === index ? null : index;
   renderGame();
+}
+
+function setActiveTool(tool) {
+  activeTool = activeTool === tool ? null : tool;
+  selectedTrayIndex = null;
+  areaToolCenter = null;
+  if (activeTool === "area") showToast("点击棋盘选择 6x6 框选区域");
+  if (activeTool === "clear-tray") showToast("点击暂存格中要清空的颜色");
+  if (activeTool === "clear-color") useClearColorTool();
+  renderGame();
+}
+
+function updateToolButtons() {
+  elements.toolButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.tool === activeTool);
+  });
+}
+
+function getAreaBounds(centerRow, centerCol) {
+  const size = 6;
+  const startRow = Math.max(0, Math.min(board.length - size, centerRow - Math.floor(size / 2)));
+  const startCol = Math.max(0, Math.min(board[0].length - size, centerCol - Math.floor(size / 2)));
+  return {
+    startRow,
+    startCol,
+    rows: Math.min(size, board.length - startRow),
+    cols: Math.min(size, board[0].length - startCol),
+  };
+}
+
+function useAreaReturnTool(row, col) {
+  const bounds = getAreaBounds(row, col);
+  const targets = [];
+  for (let r = bounds.startRow; r < bounds.startRow + bounds.rows; r += 1) {
+    for (let c = bounds.startCol; c < bounds.startCol + bounds.cols; c += 1) {
+      const cell = board[r]?.[c];
+      if (cell?.target && !cell.locked) targets.push({ row: r, col: c });
+    }
+  }
+  let moved = 0;
+  targets.forEach(({ row: targetRow, col: targetCol }) => {
+    if (returnTargetCellToColor(targetRow, targetCol)) moved += 1;
+  });
+  activeTool = null;
+  areaToolCenter = null;
+  showToast(moved ? `框选归位 ${moved} 个拼豆` : "框内没有可归位拼豆");
+  renderGame();
+}
+
+function returnTargetCellToColor(row, col) {
+  const cell = board[row]?.[col];
+  if (!cell?.target || cell.locked) return false;
+  const colorKey = cell.target.key;
+  if (cell.current?.key === colorKey) {
+    cell.locked = true;
+    return true;
+  }
+  if (cell.current && !moveBlockingBead(row, col)) return false;
+  const source = findColorSource(colorKey);
+  if (!source) return false;
+  cell.current = takeColorSource(source);
+  cell.locked = true;
+  return true;
+}
+
+function returnBoardBeadToTarget(sourceRow, sourceCol) {
+  const source = board[sourceRow]?.[sourceCol];
+  if (!source?.current || source.locked) return false;
+  const color = source.current;
+  if (source.target?.key === color.key) {
+    source.locked = true;
+    return true;
+  }
+  for (let row = 0; row < board.length; row += 1) {
+    for (let col = 0; col < board[row].length; col += 1) {
+      const target = board[row][col];
+      if (!target?.target || target.locked || target.target.key !== color.key) continue;
+      if (target.current?.key === color.key) {
+        target.locked = true;
+        continue;
+      }
+      if (target.current && !moveBlockingBead(row, col)) continue;
+      target.current = color;
+      target.locked = true;
+      source.current = null;
+      return true;
+    }
+  }
+  return false;
+}
+
+function useClearTrayTool(index) {
+  const color = tray[index];
+  if (!color) {
+    showToast("请点击有拼豆的暂存格");
+    return;
+  }
+  const moved = placeColorBeads(color.key, { trayOnly: true });
+  activeTool = null;
+  showToast(moved ? `清空槽位 ${moved} 个拼豆` : "该颜色暂时无法清空");
+  renderGame();
+}
+
+function useClearColorTool() {
+  const colors = [...new Set([
+    ...board.flat().filter((cell) => cell?.current && !cell.locked).map((cell) => cell.current.key),
+    ...tray.filter(Boolean).map((color) => color.key),
+  ])];
+  const colorKey = shuffle(colors)[0];
+  if (!colorKey) {
+    activeTool = null;
+    showToast("当前没有可消除颜色");
+    renderGame();
+    return;
+  }
+  const moved = placeColorBeads(colorKey);
+  activeTool = null;
+  showToast(moved ? `消色归位 ${moved} 个拼豆` : "没有可归位的颜色");
+  renderGame();
+}
+
+function placeColorBeads(colorKey, options = {}) {
+  const targets = [];
+  for (let row = 0; row < board.length; row += 1) {
+    for (let col = 0; col < board[row].length; col += 1) {
+      const cell = board[row][col];
+      if (cell?.target?.key === colorKey && !cell.locked) targets.push({ row, col, cell });
+    }
+  }
+  let moved = 0;
+  targets.forEach(({ row, col, cell }) => {
+    if (cell.current?.key === colorKey) {
+      cell.locked = true;
+      moved += 1;
+      return;
+    }
+    if (cell.current && !moveBlockingBead(row, col)) return;
+    const source = findColorSource(colorKey, options);
+    if (!source) return;
+    cell.current = takeColorSource(source);
+    cell.locked = true;
+    moved += 1;
+  });
+  return moved;
+}
+
+function findColorSource(colorKey, options = {}) {
+  if (!options.boardOnly) {
+    const trayIndex = tray.findIndex((color) => color?.key === colorKey);
+    if (trayIndex !== -1) return { type: "tray", index: trayIndex };
+  }
+  if (!options.trayOnly) {
+    for (let row = 0; row < board.length; row += 1) {
+      for (let col = 0; col < board[row].length; col += 1) {
+        const cell = board[row][col];
+        if (cell?.current?.key === colorKey && !cell.locked && cell.target?.key !== colorKey) {
+          return { type: "board", row, col };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function takeColorSource(source) {
+  if (source.type === "tray") {
+    const color = tray[source.index];
+    tray[source.index] = null;
+    return color;
+  }
+  const cell = board[source.row]?.[source.col];
+  const color = cell.current;
+  cell.current = null;
+  return color;
+}
+
+function moveBlockingBead(row, col) {
+  const source = board[row]?.[col];
+  if (!source?.current || source.locked) return true;
+  for (let r = 0; r < board.length; r += 1) {
+    for (let c = 0; c < board[r].length; c += 1) {
+      const target = board[r][c];
+      if (!target?.target || target.locked || target.current) continue;
+      if (target.target.key === source.current.key) continue;
+      target.current = source.current;
+      source.current = null;
+      return true;
+    }
+  }
+  return false;
 }
 
 function checkWin() {
@@ -1485,6 +1718,16 @@ function bindEvents() {
       initGame().catch((error) => handleGameLoadError(error));
     });
   }
+  if (elements.returnHomeButton) {
+    elements.returnHomeButton.addEventListener("click", () => {
+      activeTool = null;
+      areaToolCenter = null;
+      setActiveView("home");
+    });
+  }
+  elements.toolButtons.forEach((button) => {
+    button.addEventListener("click", () => setActiveTool(button.dataset.tool));
+  });
   elements.zoomButton.addEventListener("click", () => {
     zoomed = !zoomed;
     elements.zoomSliderWrap.classList.toggle("hidden", !zoomed);
@@ -1528,10 +1771,15 @@ function bindEvents() {
       const nextLevel = Math.min(totalHomeLevels, getLevelNumber(selectedLevelId) + 1);
       selectedLevelId = String(nextLevel);
       elements.resultModal.classList.add("hidden");
+      activeTool = null;
+      areaToolCenter = null;
+      zoomed = false;
+      elements.zoomSliderWrap.classList.add("hidden");
       setActiveView("home");
       syncHomeLevelButtons();
       return;
     }
+    elements.resultModal.classList.add("hidden");
     initGame().catch((error) => handleGameLoadError(error, "关卡重启失败"));
   });
   elements.modalCloseButton.addEventListener("click", () => elements.resultModal.classList.add("hidden"));
