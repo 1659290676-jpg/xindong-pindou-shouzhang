@@ -2084,6 +2084,8 @@ body:has(.game-view:not(.hidden)) .toast {
 }
 
 .player-mode:has(.game-view:not(.hidden)) .toast {
+  top: 480px;
+  left: 50%;
   bottom: auto;
 }
 
