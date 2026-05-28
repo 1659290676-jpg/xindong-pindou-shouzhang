@@ -75,6 +75,7 @@ const elements = {
   homeView: document.getElementById("homeView"),
   generatorView: document.getElementById("generatorView"),
   gameView: document.getElementById("gameView"),
+  gameShell: document.querySelector(".game-shell"),
   homeOriginalPreview: document.getElementById("homeOriginalPreview"),
   homePatternBoard: document.getElementById("homePatternBoard"),
   homeLevelSelector: document.getElementById("homeLevelSelector"),
@@ -157,6 +158,15 @@ let hintClearTimerId = null;
 let hintCells = new Set();
 let activeTool = null;
 let areaToolCenter = null;
+
+const gameDesignSize = { width: 480, height: 853 };
+
+function updateGameScale() {
+  if (!elements.gameView || !elements.gameShell) return;
+  const viewRect = elements.gameView.getBoundingClientRect();
+  const scale = Math.min(1, viewRect.width / gameDesignSize.width, viewRect.height / gameDesignSize.height);
+  elements.gameShell.style.setProperty("--game-scale", Number.isFinite(scale) && scale > 0 ? scale.toFixed(4) : "1");
+}
 
 function rgbToHex(r, g, b) {
   return `#${[r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
@@ -748,6 +758,7 @@ function setActiveView(view) {
   elements.generatorTab.classList.toggle("active", isGenerator);
   elements.gameTab.classList.toggle("active", isGame);
   if (isHome) syncHomeLevelButtons();
+  window.requestAnimationFrame(updateGameScale);
 }
 
 function getLevelNumber(levelId = selectedLevelId) {
@@ -1630,6 +1641,8 @@ function clampPan(nextPan) {
 }
 
 function bindEvents() {
+  window.addEventListener("resize", updateGameScale);
+  window.visualViewport?.addEventListener("resize", updateGameScale);
   elements.homeTab.addEventListener("click", () => setActiveView("home"));
   elements.generatorTab.addEventListener("click", async () => {
     await loadLevelIntoGenerator(selectedLevelId);
@@ -1802,6 +1815,7 @@ async function boot() {
     renderHomePreview(currentGeneratedLevel);
   }
   setActiveView("home");
+  updateGameScale();
 }
 
 boot().catch((error) => {

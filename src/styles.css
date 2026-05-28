@@ -2362,3 +2362,34 @@ body:has(.game-view:not(.hidden)) .toast {
     padding: 0 10px;
   }
 }
+
+/* Keep the gameplay screen on a fixed 480x853 design canvas and scale it as one unit on mobile. */
+.game-view {
+  align-items: start;
+  justify-items: center;
+}
+
+.game-shell,
+.player-mode .game-shell {
+  width: 480px;
+  height: 853px;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  grid-template-rows: 118px 452px 110px 173px;
+  transform: scale(var(--game-scale, 1));
+  transform-origin: top center;
+}
+
+.game-shell .tool-button {
+  width: 122px;
+  height: 132px;
+}
+
+.game-shell .board-section {
+  padding: 47px 27px 24px;
+}
+
+.game-shell .tray {
+  padding: 0 10px;
+}
