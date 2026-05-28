@@ -7,7 +7,7 @@ const fixedLevelConfigs = {
   "1": {
     src: "./assets/level-1.png",
     name: "关卡 1",
-    settings: { cols: 30, rows: 30, maxColors: 3, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -2, contrast: 54, saturation: 106 },
+    settings: { cols: 15, rows: 15, maxColors: 3, offsetX: 0, offsetY: 0, imageScale: 93, brightness: -9, contrast: 59, saturation: 106 },
   },
   "2": {
     src: "./assets/level-2.png",
@@ -56,6 +56,7 @@ const fixedLevelConfigs = {
   },
 };
 const storageKey = "xindong-levels";
+const editableFixedLevelIds = new Set();
 const baseLevelTime = 600;
 const levelTimeStep = 300;
 const traySize = 36;
@@ -378,6 +379,10 @@ function applyGeneratorSettings(settings) {
 }
 
 async function loadFixedLevelIntoGenerator(levelId) {
+  if (editableFixedLevelIds.has(String(levelId))) {
+    const stored = normalizeLevel(generatedLevels[levelId]);
+    if (isPlayableLevel(stored)) return loadLevelIntoGenerator(levelId);
+  }
   const config = fixedLevelConfigs[levelId];
   if (!config) return null;
   const level = await ensureFixedLevel(levelId);
@@ -389,13 +394,15 @@ async function loadFixedLevelIntoGenerator(levelId) {
 }
 
 async function ensureFixedLevel(levelId) {
+  const normalized = normalizeLevel(generatedLevels[levelId]);
+  if (editableFixedLevelIds.has(String(levelId)) && isPlayableLevel(normalized)) return normalized;
+
   const prebuilt = normalizeLevel(fixedLevelData[levelId]);
   if (isPlayableLevel(prebuilt)) {
     generatedLevels[levelId] = prebuilt;
     return prebuilt;
   }
 
-  const normalized = normalizeLevel(generatedLevels[levelId]);
   if (isPlayableLevel(normalized)) return normalized;
 
   const config = fixedLevelConfigs[levelId];
@@ -781,6 +788,10 @@ function getPlayerLevelLabel() {
   return `LV.${1 + Math.floor(completedCount / 2)}`;
 }
 
+function getCoinTotal() {
+  return Object.values(levelProgress).filter((progress) => progress?.completed === true).length * 30;
+}
+
 function stopGameTimers() {
   window.clearInterval(timerId);
   timerId = null;
@@ -824,6 +835,7 @@ async function buildFixedLevels() {
   const entries = [];
   for (const levelId of Object.keys(fixedLevelConfigs)) {
     try {
+      if (editableFixedLevelIds.has(String(levelId)) && isPlayableLevel(normalizeLevel(previousLevels[levelId]))) continue;
       delete generatedLevels[levelId];
       const level = await ensureFixedLevel(levelId);
       if (level) entries.push([levelId, level]);
@@ -973,11 +985,12 @@ async function initGame() {
   secondsLeft = getLevelTimeLimit(activeGameLevel.id || selectedLevelId);
   won = false;
   elements.resultModal.classList.add("hidden");
-  elements.coinCount.textContent = "0";
+  elements.coinCount.textContent = String(getCoinTotal());
   if (elements.gameLevelLabel) elements.gameLevelLabel.textContent = `第${getLevelNumber(activeGameLevel.id || selectedLevelId)}关`;
   if (elements.gamePlayerLevelLabel) elements.gamePlayerLevelLabel.textContent = getPlayerLevelLabel();
   elements.board.style.setProperty("--cols", activeGameLevel.cols);
   elements.board.style.setProperty("--rows", activeGameLevel.rows);
+  elements.board.style.setProperty("--board-base-scale", getLevelNumber(activeGameLevel.id || selectedLevelId) === 1 ? "1.5" : "1");
   centerBoard();
   startTimer();
   renderGame();
@@ -1512,7 +1525,7 @@ function checkWin() {
   saveCurrentLevelProgress(100, true);
   clearIdleHint();
   window.clearInterval(timerId);
-  elements.coinCount.textContent = "30";
+  elements.coinCount.textContent = String(getCoinTotal());
   window.setTimeout(() => showResultModal("win"), 250);
 }
 
@@ -1628,7 +1641,8 @@ function centerBoard() {
 }
 
 function applyBoardTransform() {
-  const scale = zoomed ? zoomScale : 1;
+  const baseScale = Number.parseFloat(getComputedStyle(elements.board).getPropertyValue("--board-base-scale")) || 1;
+  const scale = baseScale * (zoomed ? zoomScale : 1);
   elements.board.classList.toggle("zoomed", zoomed);
   elements.board.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${scale})`;
 }
@@ -1798,7 +1812,12 @@ function bindEvents() {
       return;
     }
     elements.resultModal.classList.add("hidden");
-    initGame().catch((error) => handleGameLoadError(error, "关卡重启失败"));
+    activeTool = null;
+    areaToolCenter = null;
+    zoomed = false;
+    elements.zoomSliderWrap.classList.add("hidden");
+    setActiveView("home");
+    syncHomeLevelButtons();
   });
   elements.modalCloseButton.addEventListener("click", () => elements.resultModal.classList.add("hidden"));
 }
