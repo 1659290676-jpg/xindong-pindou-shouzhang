@@ -1592,7 +1592,7 @@ function positionPlayerToast() {
   const boardRect = elements.boardSection.getBoundingClientRect();
   if (!boardRect.width || !boardRect.height) return;
   const toastHeight = elements.toast.offsetHeight || 20;
-  const top = Math.max(boardRect.top, boardRect.bottom - toastHeight - 8);
+  const top = Math.max(boardRect.top, boardRect.bottom - toastHeight + 32);
   const centerX = boardRect.left + boardRect.width / 2;
   elements.toast.style.top = `${Math.round(top)}px`;
   elements.toast.style.left = `${Math.round(centerX)}px`;
