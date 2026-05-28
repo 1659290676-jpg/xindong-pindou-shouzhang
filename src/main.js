@@ -163,8 +163,13 @@ const gameDesignSize = { width: 480, height: 853 };
 
 function updateGameScale() {
   if (!elements.gameView || !elements.gameShell) return;
+  const viewport = window.visualViewport;
+  const visibleWidth = viewport?.width || window.innerWidth || document.documentElement.clientWidth;
+  const visibleHeight = viewport?.height || window.innerHeight || document.documentElement.clientHeight;
   const viewRect = elements.gameView.getBoundingClientRect();
-  const scale = Math.min(1, viewRect.width / gameDesignSize.width, viewRect.height / gameDesignSize.height);
+  const availableWidth = Math.min(visibleWidth || viewRect.width, viewRect.width || visibleWidth);
+  const availableHeight = Math.min(visibleHeight || viewRect.height, viewRect.height || visibleHeight);
+  const scale = Math.min(1, availableWidth / gameDesignSize.width, availableHeight / gameDesignSize.height);
   elements.gameShell.style.setProperty("--game-scale", Number.isFinite(scale) && scale > 0 ? scale.toFixed(4) : "1");
 }
 

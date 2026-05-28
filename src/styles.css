@@ -2066,12 +2066,21 @@ select {
 
 body:has(.game-view:not(.hidden)) .toast {
   bottom: 296px;
+  width: max-content;
+  max-width: none;
   background: transparent;
   color: #3f2118;
   font-size: 14px;
   font-weight: 900;
   line-height: 1.25;
+  white-space: nowrap;
   box-shadow: none;
+}
+
+@media (min-width: 761px) {
+  body:has(.game-view:not(.hidden)) .toast {
+    bottom: 304px;
+  }
 }
 
 .modal {
