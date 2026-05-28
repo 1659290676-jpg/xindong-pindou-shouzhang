@@ -2065,7 +2065,7 @@ select {
 }
 
 body:has(.game-view:not(.hidden)) .toast {
-  bottom: 280px;
+  bottom: 296px;
   background: transparent;
   color: #3f2118;
   font-size: 14px;
@@ -2215,11 +2215,8 @@ body:has(.game-view:not(.hidden)) .toast {
 .result-panel.win {
   width: min(388px, calc(100vw - 22px));
   height: min(688px, calc(100vh - 36px));
-  display: grid;
-  grid-template-rows: 220px 164px auto auto 92px;
-  justify-items: center;
-  align-items: center;
-  padding: 0 42px 28px;
+  display: block;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background:
@@ -2249,10 +2246,12 @@ body:has(.game-view:not(.hidden)) .toast {
 }
 
 .result-panel.win .result-sticker {
-  grid-row: 2;
+  position: absolute;
+  left: 30px;
+  top: 260px;
   width: 169px;
   height: 133px;
-  margin: 68px 0 0;
+  margin: 0;
   z-index: 1;
 }
 
@@ -2261,7 +2260,10 @@ body:has(.game-view:not(.hidden)) .toast {
 }
 
 .result-panel.win h1 {
-  grid-row: 3;
+  position: absolute;
+  left: 30px;
+  top: 374px;
+  width: 200px;
   margin: 0;
   color: #7b3c20;
   font-size: 28px;
@@ -2274,15 +2276,20 @@ body:has(.game-view:not(.hidden)) .toast {
 }
 
 .result-panel.win #restartButton {
-  grid-row: 5;
-  width: 1015px;
-  height: 440px;
-  max-width: min(1015px, 88vw);
-  max-height: 440px;
+  position: absolute;
+  left: 30px;
+  top: 430px;
+  width: 780px;
+  height: 340px;
+  max-width: none;
+  max-height: none;
   min-width: 0;
   padding: 0;
   border: 0;
-  background: url("./assets/ui/gameplay/success-next-button.png") center / contain no-repeat;
+  background-image: url("./assets/ui/gameplay/success-next-button.png");
+  background-position: -1291px -3897px;
+  background-size: 3355px 5960px;
+  background-repeat: no-repeat;
   color: transparent;
   font-size: 0;
   text-shadow: none;
