@@ -170,8 +170,10 @@ function updateGameScale() {
   const viewRect = elements.gameView.getBoundingClientRect();
   const availableWidth = Math.min(visibleWidth || viewRect.width, viewRect.width || visibleWidth);
   const availableHeight = Math.min(visibleHeight || viewRect.height, viewRect.height || visibleHeight);
-  const scale = Math.min(1, availableWidth / gameDesignSize.width, availableHeight / gameDesignSize.height);
+  const playerWidthScale = playerMode ? (visibleWidth / gameDesignSize.width) : 1;
+  const scale = Math.min(1, availableWidth / gameDesignSize.width, availableHeight / gameDesignSize.height, playerWidthScale);
   elements.gameShell.style.setProperty("--game-scale", Number.isFinite(scale) && scale > 0 ? scale.toFixed(4) : "1");
+  positionPlayerToast();
 }
 
 function rgbToHex(r, g, b) {
@@ -1572,9 +1574,29 @@ function saveCurrentLevelProgress(percent, completed) {
 
 function showToast(message) {
   elements.toast.textContent = message;
+  positionPlayerToast();
   elements.toast.classList.add("show");
   window.clearTimeout(showToast.timeoutId);
   showToast.timeoutId = window.setTimeout(() => elements.toast.classList.remove("show"), 1200);
+}
+
+function positionPlayerToast() {
+  if (!playerMode || !elements.toast || !elements.boardSection || elements.gameView.classList.contains("hidden")) {
+    if (elements.toast) {
+      elements.toast.style.removeProperty("top");
+      elements.toast.style.removeProperty("left");
+      elements.toast.style.removeProperty("bottom");
+    }
+    return;
+  }
+  const boardRect = elements.boardSection.getBoundingClientRect();
+  if (!boardRect.width || !boardRect.height) return;
+  const toastHeight = elements.toast.offsetHeight || 20;
+  const top = Math.max(boardRect.top, boardRect.bottom - toastHeight - 8);
+  const centerX = boardRect.left + boardRect.width / 2;
+  elements.toast.style.top = `${Math.round(top)}px`;
+  elements.toast.style.left = `${Math.round(centerX)}px`;
+  elements.toast.style.bottom = "auto";
 }
 
 function showCombo(fillCount) {

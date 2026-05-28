@@ -2083,6 +2083,10 @@ body:has(.game-view:not(.hidden)) .toast {
   }
 }
 
+.player-mode:has(.game-view:not(.hidden)) .toast {
+  bottom: auto;
+}
+
 .modal {
   position: fixed;
   inset: 0;
@@ -2432,4 +2436,28 @@ body:has(.game-view:not(.hidden)) .toast {
 
 .game-shell .tray {
   padding: 0 10px;
+}
+
+@media (max-width: 760px) {
+  .player-mode {
+    overflow: hidden;
+  }
+
+  .player-mode .app-shell {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    border: 0;
+  }
+
+  .player-mode .game-view {
+    width: 100vw;
+    height: 100vh;
+    justify-items: start;
+    overflow: hidden;
+  }
+
+  .player-mode .game-shell {
+    transform-origin: top left;
+  }
 }
