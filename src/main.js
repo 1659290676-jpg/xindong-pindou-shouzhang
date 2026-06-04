@@ -56,9 +56,13 @@ const fixedLevelConfigs = {
   },
 };
 const storageKey = "xindong-levels";
-const editableFixedLevelIds = new Set();
-const baseLevelTime = 600;
-const levelTimeStep = 300;
+const editableFixedLevelIds = playerMode ? new Set() : new Set(Array.from({ length: totalHomeLevels }, (_, index) => String(index + 1)));
+const lifeStateKey = "xindong-life-state";
+const maxLives = 5;
+const lifeRecoveryMs = 60 * 60 * 1000;
+const adTimeBonus = 300;
+const shortLevelTime = 300;
+const standardLevelTime = 600;
 const traySize = 36;
 const trayCols = 12;
 const maxPickupPerClick = trayCols;
@@ -83,6 +87,9 @@ const elements = {
   homeLevelNumber: document.getElementById("homeLevelNumber"),
   homeLevelHint: document.getElementById("homeLevelHint"),
   homeCoin: document.getElementById("homeCoin"),
+  homeLives: document.getElementById("homeLives"),
+  homeLifeTimer: document.getElementById("homeLifeTimer"),
+  homeLifeButton: document.getElementById("homeLifeButton"),
   homePlayerLevel: document.getElementById("homePlayerLevel"),
   startLevelButton: document.getElementById("startLevelButton"),
   levelSelect: document.getElementById("levelSelect"),
@@ -113,6 +120,9 @@ const elements = {
   tray: document.getElementById("tray"),
   timer: document.getElementById("timer"),
   coinCount: document.getElementById("coinCount"),
+  gameLives: document.getElementById("gameLives"),
+  gameLifeTimer: document.getElementById("gameLifeTimer"),
+  gameLifeButton: document.getElementById("gameLifeButton"),
   gameLevelLabel: document.getElementById("gameLevelLabel"),
   gamePlayerLevelLabel: document.getElementById("gamePlayerLevelLabel"),
   returnHomeButton: document.getElementById("returnHomeButton"),
@@ -127,6 +137,7 @@ const elements = {
   resultCat: document.getElementById("resultCat"),
   resultTitle: document.getElementById("resultTitle"),
   resultText: document.getElementById("resultText"),
+  adTimeButton: document.getElementById("adTimeButton"),
   restartButton: document.getElementById("restartButton"),
   modalCloseButton: document.getElementById("modalCloseButton"),
   zoomButton: document.getElementById("zoomButton"),
@@ -140,6 +151,7 @@ let sourceImageName = "内置猫咪素材";
 let sourceImageDataUrl = null;
 let generatedLevels = loadStoredLevels();
 let levelProgress = loadLevelProgress();
+let lifeState = loadLifeState();
 let currentGeneratedLevel = null;
 let activeGameLevel = null;
 let selectedLevelId = "1";
@@ -159,8 +171,24 @@ let hintClearTimerId = null;
 let hintCells = new Set();
 let activeTool = null;
 let areaToolCenter = null;
+let selectedBoardGroup = null;
+let lifeTickerId = null;
+let audioContext = null;
 
 const gameDesignSize = { width: 480, height: 853 };
+const uiEditorLayoutKey = "neko-ui-editor-scenes-v2";
+
+const uiEditorSceneRoots = {
+  levelEntry: ".home-phone",
+  gameplay: ".game-shell",
+  successModal: ".result-panel.win",
+  failModal: ".result-panel.fail",
+};
+
+const uiEditorLayoutOffsets = {
+  boardFrame: { target: ".board-section::before", parentX: 18, parentY: 118 },
+  boardPlayArea: { target: ".board-window", parentX: 18, parentY: 118 },
+};
 
 function updateGameScale() {
   if (!elements.gameView || !elements.gameShell) return;
@@ -174,6 +202,80 @@ function updateGameScale() {
   const scale = Math.min(1, availableWidth / gameDesignSize.width, availableHeight / gameDesignSize.height, playerWidthScale);
   elements.gameShell.style.setProperty("--game-scale", Number.isFinite(scale) && scale > 0 ? scale.toFixed(4) : "1");
   positionPlayerToast();
+}
+
+function readUiEditorLayouts() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(uiEditorLayoutKey));
+    return saved && typeof saved === "object" ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function setEditorRectStyle(node, layer, options = {}) {
+  if (!node || !layer) return;
+  const parentX = options.parentX || 0;
+  const parentY = options.parentY || 0;
+  node.style.position = "absolute";
+  node.style.left = `${Math.round(layer.x - parentX)}px`;
+  node.style.top = `${Math.round(layer.y - parentY)}px`;
+  node.style.width = `${Math.round(layer.w)}px`;
+  node.style.height = `${Math.round(layer.h)}px`;
+  node.style.zIndex = layer.z ?? "";
+  node.style.opacity = layer.opacity ?? "";
+  node.style.transform = "none";
+  node.style.maxWidth = "none";
+  node.style.maxHeight = "none";
+}
+
+function applyEditorTextStyle(node, layer) {
+  if (!node || !layer) return;
+  node.style.fontSize = `${Math.round(layer.fontSize || Math.max(12, layer.h * 0.72))}px`;
+  node.style.lineHeight = "1";
+  node.style.display = "grid";
+  node.style.placeItems = "center";
+  node.style.whiteSpace = "nowrap";
+  if (layer.type === "text") node.textContent = layer.text || node.textContent;
+}
+
+function applyUiEditorLayouts() {
+  const saved = readUiEditorLayouts();
+  if (!saved) return;
+  document.body.classList.add("ui-editor-layout-active");
+
+  Object.entries(uiEditorSceneRoots).forEach(([sceneKey, rootSelector]) => {
+    const scene = saved[sceneKey];
+    if (!Array.isArray(scene?.layers)) return;
+    const root = document.querySelector(rootSelector);
+    if (!root) return;
+    if (sceneKey === "levelEntry" || sceneKey === "gameplay") root.style.position = "relative";
+
+    scene.layers.forEach((layer) => {
+      if (!layer?.target || layer.locked) return;
+      const special = uiEditorLayoutOffsets[layer.key];
+      if (special?.target?.includes("::before")) {
+        document.documentElement.style.setProperty(`--ui-${layer.key}-x`, `${Math.round(layer.x - special.parentX)}px`);
+        document.documentElement.style.setProperty(`--ui-${layer.key}-y`, `${Math.round(layer.y - special.parentY)}px`);
+        document.documentElement.style.setProperty(`--ui-${layer.key}-w`, `${Math.round(layer.w)}px`);
+        document.documentElement.style.setProperty(`--ui-${layer.key}-h`, `${Math.round(layer.h)}px`);
+        return;
+      }
+
+      const parentLayer = layer.parentKey ? scene.layers.find((item) => item.key === layer.parentKey) : null;
+      const targetSelector = special?.target || layer.target;
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+      setEditorRectStyle(target, layer, {
+        ...special,
+        parentX: parentLayer?.x ?? special?.parentX ?? 0,
+        parentY: parentLayer?.y ?? special?.parentY ?? 0,
+      });
+      applyEditorTextStyle(target, layer);
+    });
+  });
+
+  updateGameScale();
 }
 
 function rgbToHex(r, g, b) {
@@ -271,6 +373,101 @@ function saveLevelProgress() {
   } catch (error) {
     console.warn("关卡进度保存失败", error);
   }
+}
+
+function loadLifeState() {
+  try {
+    return normalizeLifeState(JSON.parse(localStorage.getItem(lifeStateKey)) || {});
+  } catch {
+    return normalizeLifeState({});
+  }
+}
+
+function normalizeLifeState(state) {
+  const now = Date.now();
+  let lives = Math.max(0, Math.min(maxLives, Number(state.lives ?? maxLives)));
+  let nextLifeAt = Number(state.nextLifeAt) || 0;
+
+  if (lives >= maxLives) {
+    return { lives: maxLives, nextLifeAt: 0 };
+  }
+
+  if (!nextLifeAt) nextLifeAt = now + lifeRecoveryMs;
+  if (now >= nextLifeAt) {
+    const recovered = 1 + Math.floor((now - nextLifeAt) / lifeRecoveryMs);
+    lives = Math.min(maxLives, lives + recovered);
+    nextLifeAt = lives >= maxLives ? 0 : nextLifeAt + recovered * lifeRecoveryMs;
+  }
+
+  return { lives, nextLifeAt };
+}
+
+function saveLifeState() {
+  try {
+    localStorage.setItem(lifeStateKey, JSON.stringify(lifeState));
+  } catch (error) {
+    console.warn("生命状态保存失败", error);
+  }
+}
+
+function getLifeState() {
+  lifeState = normalizeLifeState(lifeState);
+  saveLifeState();
+  return lifeState;
+}
+
+function spendLife() {
+  const state = getLifeState();
+  if (state.lives <= 0) return false;
+  state.lives -= 1;
+  if (state.lives < maxLives && !state.nextLifeAt) state.nextLifeAt = Date.now() + lifeRecoveryMs;
+  lifeState = normalizeLifeState(state);
+  saveLifeState();
+  updateLifeUI();
+  return true;
+}
+
+function grantLife(count = 1) {
+  const state = getLifeState();
+  state.lives = Math.min(maxLives, state.lives + count);
+  state.nextLifeAt = state.lives >= maxLives ? 0 : (state.nextLifeAt || Date.now() + lifeRecoveryMs);
+  lifeState = normalizeLifeState(state);
+  saveLifeState();
+  updateLifeUI();
+}
+
+function formatLifeCountdown(ms) {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${minutes}:${seconds}`;
+}
+
+function updateLifeUI() {
+  const state = getLifeState();
+  const hearts = `${"♥".repeat(state.lives)}${"♡".repeat(maxLives - state.lives)}`;
+  const timerText = state.lives >= maxLives || !state.nextLifeAt ? "" : formatLifeCountdown(state.nextLifeAt - Date.now());
+  [elements.homeLives, elements.gameLives].forEach((target) => {
+    if (target) target.textContent = hearts;
+  });
+  [elements.homeLifeTimer, elements.gameLifeTimer].forEach((target) => {
+    if (target) target.textContent = timerText;
+  });
+}
+
+function startLifeTicker() {
+  window.clearInterval(lifeTickerId);
+  updateLifeUI();
+  lifeTickerId = window.setInterval(updateLifeUI, 1000);
+}
+
+function handleLifeAdClick() {
+  if (getLifeState().lives >= maxLives) {
+    showToast("生命已满");
+    return;
+  }
+  grantLife(1);
+  showToast("广告奖励：生命 +1");
 }
 
 function cellKey(cell) {
@@ -674,6 +871,7 @@ function syncHomeLevelButtons() {
   const completedCount = Object.values(levelProgress).filter((progress) => progress?.completed === true).length;
   if (elements.homeCoin) elements.homeCoin.textContent = String(completedCount * 30);
   if (elements.homePlayerLevel) elements.homePlayerLevel.textContent = `LV.${1 + Math.floor(completedCount / 2)}`;
+  updateLifeUI();
   const currentLevelNumber = Math.min(totalHomeLevels, highestCompleted + 1);
   const nextLevelNumber = Math.min(totalHomeLevels, currentLevelNumber + 1);
   elements.homeLevelSelector.querySelectorAll(".level-chip").forEach((button) => {
@@ -759,6 +957,12 @@ function isLevelPlayable(levelId) {
   return levelNumber <= getHighestCompletedLevel() + 1;
 }
 
+function hasLifeForPlay() {
+  if (getLifeState().lives > 0) return true;
+  showToast("生命不足，点击生命看广告或等待恢复");
+  return false;
+}
+
 function setActiveView(view) {
   if (playerMode && view === "generator") view = "home";
   const isHome = view === "home";
@@ -782,7 +986,7 @@ function getLevelNumber(levelId = selectedLevelId) {
 
 function getLevelTimeLimit(levelId = selectedLevelId) {
   const levelNumber = getLevelNumber(levelId);
-  return baseLevelTime + (levelNumber - 1) * levelTimeStep;
+  return levelNumber <= 2 ? shortLevelTime : standardLevelTime;
 }
 
 function getPlayerLevelLabel() {
@@ -983,11 +1187,13 @@ async function initGame() {
   selectedTrayIndex = null;
   activeTool = null;
   areaToolCenter = null;
+  selectedBoardGroup = null;
   correctStreak = 0;
   secondsLeft = getLevelTimeLimit(activeGameLevel.id || selectedLevelId);
   won = false;
   elements.resultModal.classList.add("hidden");
   elements.coinCount.textContent = String(getCoinTotal());
+  updateLifeUI();
   if (elements.gameLevelLabel) elements.gameLevelLabel.textContent = `第${getLevelNumber(activeGameLevel.id || selectedLevelId)}关`;
   if (elements.gamePlayerLevelLabel) elements.gamePlayerLevelLabel.textContent = getPlayerLevelLabel();
   elements.board.style.setProperty("--cols", activeGameLevel.cols);
@@ -1038,6 +1244,7 @@ function renderGame() {
         cell.style.setProperty("--target-bg", alphaColor(data.target.color, 0.72));
         if (data.locked) cell.classList.add("locked");
         if (hintCells.has(`${row},${col}`)) cell.classList.add("hint");
+        if (isBoardPointSelected(row, col)) cell.classList.add("lifted");
         if (data.current) {
           const bead = document.createElement("span");
           bead.className = "bead";
@@ -1099,40 +1306,102 @@ function handleBoardClick(row, col) {
   }
   const cell = board[row][col];
   if (!cell?.target || cell.locked) {
-    showToast("这里不能操作");
+    showToast("??????");
     return;
   }
   if (selectedTrayIndex !== null) {
+    selectedBoardGroup = null;
     placeSelectedOnBoard(cell);
     renderGame();
     return;
   }
-  if (!cell.current) {
-    showToast("先选择一个拼豆");
+  if (selectedBoardGroup) {
+    placeSelectedBoardGroupOnTarget(row, col);
+    renderGame();
     return;
   }
-  pickConnectedBeads(row, col);
+  if (!cell.current) {
+    showToast("???????");
+    return;
+  }
+  selectConnectedBeads(row, col);
   renderGame();
 }
 
-function pickConnectedBeads(startRow, startCol) {
+function selectConnectedBeads(startRow, startCol) {
   const start = board[startRow][startCol];
   if (!start?.current) return;
-  const emptySlots = tray.map((item, index) => (item ? null : index)).filter((index) => index !== null);
-  if (emptySlots.length === 0) {
-    showToast("暂存格满了");
-    return;
+  const group = findConnectedGroup(startRow, startCol, start.current.key).slice(0, maxPickupPerClick);
+  selectedTrayIndex = null;
+  selectedBoardGroup = {
+    color: start.current,
+    points: group,
+  };
+  showToast(`??? ${group.length} ??????????????`);
+}
+
+function isBoardPointSelected(row, col) {
+  return Boolean(selectedBoardGroup?.points?.some((point) => point.row === row && point.col === col));
+}
+
+function clearSelectedBoardGroup() {
+  selectedBoardGroup = null;
+}
+
+function placeSelectedBoardGroupInTray(startIndex) {
+  if (!selectedBoardGroup?.points?.length) return false;
+  const emptySlots = tray
+    .map((item, index) => (item ? null : index))
+    .filter((index) => index !== null)
+    .sort((a, b) => (a < startIndex ? a + traySize : a) - (b < startIndex ? b + traySize : b));
+  if (!emptySlots.length) {
+    showToast("?????");
+    return false;
   }
-  const group = findConnectedGroup(startRow, startCol, start.current.key);
-  const pickupLimit = Math.min(emptySlots.length, maxPickupPerClick);
-  const picked = group.slice(0, pickupLimit);
-  picked.forEach(({ row, col }, index) => {
+  const moved = Math.min(emptySlots.length, selectedBoardGroup.points.length);
+  selectedBoardGroup.points.slice(0, moved).forEach(({ row, col }, index) => {
     tray[emptySlots[index]] = board[row][col].current;
     board[row][col].current = null;
   });
-  showToast(group.length > picked.length ? `本次拾取 ${picked.length} 个，剩余同色留在棋盘` : `拾取 ${picked.length} 个同色拼豆`);
+  clearSelectedBoardGroup();
+  playBeadPlaceSound();
+  showToast(`????? ${moved} ???`);
+  return true;
 }
 
+function placeSelectedBoardGroupOnTarget(row, col) {
+  if (!selectedBoardGroup?.points?.length) return false;
+  const cell = board[row]?.[col];
+  const colorKey = selectedBoardGroup.color.key;
+  if (!cell?.target || cell.locked || cell.target.key !== colorKey) {
+    showToast("???????????");
+    return false;
+  }
+  if (cell.current && !moveBlockingBead(row, col)) {
+    showToast("???????");
+    return false;
+  }
+  let targetGroup = findFillableTargetGroup(cell, colorKey);
+  if (!targetGroup.length && !cell.current && cell.target.key === colorKey) targetGroup = [cell];
+  if (!targetGroup.length) {
+    showToast("????????");
+    return false;
+  }
+  const fillCount = Math.min(targetGroup.length, selectedBoardGroup.points.length);
+  for (let index = 0; index < fillCount; index += 1) {
+    const sourcePoint = selectedBoardGroup.points[index];
+    const sourceCell = board[sourcePoint.row]?.[sourcePoint.col];
+    if (!sourceCell?.current) continue;
+    targetGroup[index].current = sourceCell.current;
+    targetGroup[index].locked = true;
+    sourceCell.current = null;
+  }
+  clearSelectedBoardGroup();
+  correctStreak += fillCount;
+  playBeadPlaceSound();
+  showCombo(fillCount);
+  return true;
+}
 function findConnectedGroup(startRow, startCol, colorKey) {
   const group = [];
   const queue = [{ row: startRow, col: startCol }];
@@ -1263,6 +1532,7 @@ function placeSelectedOnBoard(cell) {
     }
     selectedTrayIndex = null;
     correctStreak += fillCount;
+    playBeadPlaceSound();
     showCombo(fillCount);
   } else {
     correctStreak = 0;
@@ -1271,6 +1541,7 @@ function placeSelectedOnBoard(cell) {
     selectedTrayIndex = null;
     secondsLeft = Math.max(0, secondsLeft - 10);
     updateTimer();
+    playBeadPlaceSound();
     showToast("错放 -10 秒");
   }
 }
@@ -1318,17 +1589,23 @@ function handleTrayClick(index) {
     useClearTrayTool(index);
     return;
   }
+  if (selectedBoardGroup) {
+    placeSelectedBoardGroupInTray(index);
+    renderGame();
+    return;
+  }
   if (!tray[index]) {
-    showToast("空槽位");
+    showToast("???");
     return;
   }
   selectedTrayIndex = selectedTrayIndex === index ? null : index;
+  clearSelectedBoardGroup();
   renderGame();
 }
-
 function setActiveTool(tool) {
   activeTool = activeTool === tool ? null : tool;
   selectedTrayIndex = null;
+  clearSelectedBoardGroup();
   areaToolCenter = null;
   if (activeTool === "area") showToast("点击棋盘选择 6x6 框选区域");
   if (activeTool === "clear-tray") showToast("点击暂存格中要清空的颜色");
@@ -1534,7 +1811,10 @@ function checkWin() {
 function showResultModal(type) {
   clearIdleHint();
   const isWin = type === "win";
-  if (!isWin) saveCurrentLevelProgress(calculateLevelCompletionPercent(), false);
+  if (!isWin) {
+    saveCurrentLevelProgress(calculateLevelCompletionPercent(), false);
+    spendLife();
+  }
   elements.resultPanel.classList.toggle("fail", !isWin);
   elements.resultPanel.classList.toggle("win", isWin);
   elements.resultBanner.textContent = isWin ? "贴纸复原完成" : "挑战失败了";
@@ -1546,9 +1826,11 @@ function showResultModal(type) {
     elements.resultStickerImage.src = activeGameLevel.sourceImage;
   }
   elements.resultTitle.textContent = isWin ? "贴纸复原完成" : "失败了";
-  elements.resultText.textContent = isWin ? "获得猫咪手账贴纸，金币 +30" : "猫咪哭唧唧地等你再试一次";
-  elements.restartButton.textContent = isWin ? "下一关" : "再玩一次";
+  elements.resultText.textContent = isWin ? "获得猫咪手账贴纸，金币 +30" : "看广告可额外获得 300 秒继续挑战";
+  elements.restartButton.textContent = isWin ? "下一关" : "返回主页";
+  elements.adTimeButton?.classList.toggle("hidden", isWin);
   elements.resultModal.classList.remove("hidden");
+  window.requestAnimationFrame(applyUiEditorLayouts);
 }
 
 function getActiveProgressLevelId() {
@@ -1573,11 +1855,32 @@ function saveCurrentLevelProgress(percent, completed) {
 }
 
 function showToast(message) {
+  const isGameActive = elements.gameView && !elements.gameView.classList.contains("hidden");
+  if (isGameActive) return;
   elements.toast.textContent = message;
   positionPlayerToast();
   elements.toast.classList.add("show");
   window.clearTimeout(showToast.timeoutId);
   showToast.timeoutId = window.setTimeout(() => elements.toast.classList.remove("show"), 1200);
+}
+
+function playBeadPlaceSound() {
+  try {
+    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.11);
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.12);
+  } catch {
+    // Audio feedback is optional; gameplay should continue if the browser blocks it.
+  }
 }
 
 function positionPlayerToast() {
@@ -1610,8 +1913,6 @@ function showCombo(fillCount) {
 function resetIdleHintTimer() {
   clearIdleHint(false);
   window.clearTimeout(idleHintTimerId);
-  if (won || secondsLeft === 0) return;
-  idleHintTimerId = window.setTimeout(showMismatchHint, idleHintDelay);
 }
 
 function clearIdleHint(shouldRender = true) {
@@ -1625,19 +1926,7 @@ function clearIdleHint(shouldRender = true) {
 }
 
 function showMismatchHint() {
-  if (won || secondsLeft === 0) return;
-  const candidates = getMismatchedBoardCells();
-  if (!candidates.length) {
-    resetIdleHintTimer();
-    return;
-  }
-  hintCells = new Set(shuffle(candidates).slice(0, maxHintCells).map((cell) => `${cell.row},${cell.col}`));
-  showToast("这些拼豆还没对上底色");
-  renderGame();
-  hintClearTimerId = window.setTimeout(() => {
-    clearIdleHint();
-    resetIdleHintTimer();
-  }, hintDuration);
+  clearIdleHint();
 }
 
 function getMismatchedBoardCells() {
@@ -1690,6 +1979,7 @@ function bindEvents() {
     setActiveView("generator");
   });
   elements.gameTab.addEventListener("click", () => {
+    if (!hasLifeForPlay()) return;
     setActiveView("game");
     initGame().catch((error) => handleGameLoadError(error));
   });
@@ -1723,6 +2013,7 @@ function bindEvents() {
   elements.playGeneratedButton.addEventListener("click", async () => {
     const level = await generateAndStoreLevel();
     if (!level) return;
+    if (!hasLifeForPlay()) return;
     setActiveView("game");
     initGame().catch((error) => handleGameLoadError(error));
   });
@@ -1750,11 +2041,13 @@ function bindEvents() {
         showToast("先完成上一关");
         return;
       }
+      if (!hasLifeForPlay()) return;
       selectedLevelId = levelId;
       elements.levelSelect.value = selectedLevelId;
       currentGeneratedLevel = level;
       renderPatternPreview(level);
       syncHomeLevelButtons();
+      if (!hasLifeForPlay()) return;
       setActiveView("game");
       initGame().catch((error) => handleGameLoadError(error));
     }).catch((error) => {
@@ -1820,6 +2113,20 @@ function bindEvents() {
     drag = null;
     elements.board.classList.remove("dragging");
   });
+  elements.homeLifeButton?.addEventListener("click", handleLifeAdClick);
+  elements.gameLifeButton?.addEventListener("click", handleLifeAdClick);
+  elements.adTimeButton?.addEventListener("click", () => {
+    if (!elements.resultPanel.classList.contains("fail")) return;
+    secondsLeft += adTimeBonus;
+    elements.resultModal.classList.add("hidden");
+    activeTool = null;
+    areaToolCenter = null;
+    selectedBoardGroup = null;
+    showToast("广告奖励：时间 +300 秒");
+    startTimer();
+    renderGame();
+    resetIdleHintTimer();
+  });
   elements.restartButton.addEventListener("click", () => {
     if (elements.resultPanel.classList.contains("win")) {
       const nextLevel = Math.min(totalHomeLevels, getLevelNumber(selectedLevelId) + 1);
@@ -1846,6 +2153,7 @@ function bindEvents() {
 
 async function boot() {
   bindEvents();
+  startLifeTicker();
   sourceImageName = "level-1.png";
   sourceImageDataUrl = fixedLevelConfigs["1"]?.src || null;
   sourceImage = sourceImageDataUrl ? await loadImage(sourceImageDataUrl) : null;
@@ -1861,6 +2169,7 @@ async function boot() {
     renderHomePreview(currentGeneratedLevel);
   }
   setActiveView("home");
+  applyUiEditorLayouts();
   updateGameScale();
 }
 

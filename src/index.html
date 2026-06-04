@@ -24,6 +24,10 @@
               <span class="level-exp"><i></i></span>
             </div>
             <div class="status-pill coin-status"><span class="coin-dot"></span><span id="homeCoin">0</span></div>
+            <button class="life-status home-life-status" id="homeLifeButton" type="button" aria-label="生命值">
+              <span class="life-hearts" id="homeLives">♥♥♥♥♥</span>
+              <small id="homeLifeTimer"></small>
+            </button>
             <button class="home-icon-button small" type="button" aria-label="设置"></button>
           </header>
 
@@ -189,6 +193,10 @@
             <div class="game-level-pill"><span id="gamePlayerLevelLabel">LV.1</span></div>
             <div class="game-stage-label" id="gameLevelLabel">第1关</div>
             <div class="coin-pill"><span id="coinCount">0</span></div>
+            <button class="life-status game-life-status" id="gameLifeButton" type="button" aria-label="生命值">
+              <span class="life-hearts" id="gameLives">♥♥♥♥♥</span>
+              <small id="gameLifeTimer"></small>
+            </button>
             <div class="timer-pill"><span id="timer">10:00</span></div>
             <button class="game-back-button" id="returnHomeButton" type="button" aria-label="返回主页"></button>
           </header>
@@ -231,6 +239,7 @@
         <div class="result-cat" id="resultCat">🐱</div>
         <h1 id="resultTitle">贴纸复原完成</h1>
         <p id="resultText">获得猫咪手账贴纸，金币 +30</p>
+        <button class="ad-time-button hidden" id="adTimeButton" type="button">看广告 +300秒</button>
         <button id="restartButton" type="button">再玩一次</button>
       </div>
     </div>

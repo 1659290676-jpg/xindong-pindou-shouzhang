@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>猫猫罐头小铺 UI 编辑器</title>
+    <link rel="stylesheet" href="./ui-editor.css" />
+  </head>
+  <body>
+    <aside class="side-panel">
+      <h1>UI 编辑器</h1>
+      <p>选择一个已完成界面，在 9:16 手机画布里微调 UI 构件。保存只写入浏览器本地，不会直接修改游戏代码。</p>
+
+      <label class="field">
+        <span>当前界面</span>
+        <select id="sceneSelect">
+          <option value="levelEntry">关卡入口</option>
+          <option value="gameplay">试玩游戏</option>
+          <option value="successModal">成功弹窗</option>
+          <option value="failModal">失败弹窗</option>
+        </select>
+      </label>
+
+      <div class="button-row">
+        <button id="loadPresetButton" type="button">载入该界面预设</button>
+        <button id="saveButton" type="button">保存当前界面</button>
+      </div>
+
+      <label class="field">
+        <span>导入新增图片</span>
+        <input id="assetInput" type="file" accept="image/*" multiple />
+      </label>
+
+      <div class="button-row">
+        <button id="duplicateButton" type="button">复制图层</button>
+        <button id="deleteButton" type="button">删除图层</button>
+      </div>
+
+      <section class="inspector">
+        <h2>选中图层</h2>
+        <label class="field"><span>名称</span><input id="nameInput" type="text" /></label>
+        <div class="grid">
+          <label class="field"><span>X</span><input id="xInput" type="number" /></label>
+          <label class="field"><span>Y</span><input id="yInput" type="number" /></label>
+          <label class="field"><span>W</span><input id="wInput" type="number" min="1" /></label>
+          <label class="field"><span>H</span><input id="hInput" type="number" min="1" /></label>
+        </div>
+        <div class="grid">
+          <label class="field"><span>层级</span><input id="zInput" type="number" /></label>
+          <label class="field"><span>透明</span><input id="opacityInput" type="number" min="0" max="1" step="0.05" /></label>
+        </div>
+        <label class="check"><input id="lockRatioInput" type="checkbox" checked /> 缩放时锁定比例</label>
+        <label class="check"><input id="lockedInput" type="checkbox" /> 锁定图层，防止误拖</label>
+      </section>
+
+      <section class="layers">
+        <h2>图层</h2>
+        <div id="layerList"></div>
+      </section>
+
+      <section class="exporter">
+        <h2>导入 / 导出</h2>
+        <div class="button-row">
+          <button id="exportJsonButton" type="button">导出 JSON</button>
+          <button id="exportCssButton" type="button">导出 CSS</button>
+        </div>
+        <label class="field">
+          <span>导入 JSON</span>
+          <input id="jsonInput" type="file" accept="application/json,.json" />
+        </label>
+        <textarea id="output" spellcheck="false" placeholder="导出内容会显示在这里"></textarea>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <div class="toolbar">
+        <strong id="canvasTitle">关卡入口 480 x 853</strong>
+        <span>拖动图层调整位置，拖右下角手柄缩放；这里是手机 9:16 设计画布。</span>
+      </div>
+      <section class="stage-wrap">
+        <div class="stage" id="stage"></div>
+      </section>
+    </main>
+
+    <script src="./ui-editor.js"></script>
+  </body>
+</html>

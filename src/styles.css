@@ -1324,6 +1324,42 @@ select {
   transform: translate(-13px, clamp(6px, 1.6vw, 8px)) scale(1.1);
 }
 
+.home-status {
+  grid-template-columns: clamp(138px, 37vw, 178px) clamp(92px, 24vw, 132px) clamp(58px, 15vw, 74px) clamp(58px, 13vw, 72px);
+}
+
+.life-status {
+  border: 2px solid #4a271e;
+  border-radius: 999px;
+  background: rgba(255, 246, 225, 0.94);
+  color: #d84d4d;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 2px 0 rgba(74, 39, 30, 0.18);
+}
+
+.life-status small {
+  display: block;
+  margin-top: 2px;
+  color: #5b3528;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.life-hearts {
+  display: block;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+
+.home-life-status {
+  height: clamp(30px, 8vw, 38px);
+  padding: 0 6px;
+  align-self: start;
+  transform: translate(-10px, clamp(12px, 3vw, 15px));
+  font-size: clamp(12px, 3vw, 15px);
+}
+
 .player-card strong {
   left: 60%;
   top: 50%;
@@ -1721,6 +1757,17 @@ select {
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.72);
 }
 
+.cell.lifted {
+  z-index: 4;
+}
+
+.cell.lifted .bead {
+  transform: translateY(-5px) scale(1.08);
+  box-shadow:
+    0 7px 10px rgba(72, 41, 25, 0.28),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.62);
+}
+
 @keyframes hintPulse {
   from {
     transform: scale(1);
@@ -1882,7 +1929,7 @@ select {
 }
 
 .timer-pill {
-  left: 260px;
+  left: 286px;
   top: 90px;
   width: 136px;
   height: 46px;
@@ -1891,6 +1938,19 @@ select {
   padding-right: 22px;
   text-align: right;
   background: url("./assets/ui/gameplay/timer-panel-crop.png") center / contain no-repeat;
+}
+
+.game-life-status {
+  position: absolute;
+  left: 232px;
+  top: 94px;
+  width: 58px;
+  height: 36px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  z-index: 2;
 }
 
 .game-back-button {
@@ -1921,6 +1981,13 @@ select {
   height: 400px;
   background: url("./assets/ui/gameplay/board-frame-crop.png") center / 100% 100% no-repeat;
   pointer-events: none;
+}
+
+.ui-editor-layout-active .board-section::before {
+  left: var(--ui-boardFrame-x, 17px);
+  top: var(--ui-boardFrame-y, 27px);
+  width: var(--ui-boardFrame-w, 410px);
+  height: var(--ui-boardFrame-h, 400px);
 }
 
 .zoom-button {
@@ -2268,6 +2335,26 @@ body:has(.game-view:not(.hidden)) .toast {
   text-shadow: none;
   box-shadow: none;
   z-index: 1;
+}
+
+.result-panel.fail .ad-time-button {
+  position: absolute;
+  left: 122px;
+  top: 356px;
+  width: 150px;
+  height: 44px;
+  border: 3px solid #4a271e;
+  border-radius: 18px;
+  background: linear-gradient(#fff7d7, #ffbd5a);
+  color: #4a271e;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 4px 0 rgba(74, 39, 30, 0.2);
+  z-index: 2;
+}
+
+.ad-time-button.hidden {
+  display: none !important;
 }
 
 .result-panel.win {
