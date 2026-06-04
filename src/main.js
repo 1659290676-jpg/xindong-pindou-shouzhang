@@ -55,7 +55,7 @@ const fixedLevelConfigs = {
     settings: { cols: 30, rows: 30, maxColors: 8, offsetX: 0, offsetY: 0, imageScale: 100, brightness: -13, contrast: 14, saturation: 55 },
   },
 };
-const storageKey = "xindong-levels";
+const storageKey = "xindong-levels-20260604-level1-fix";
 const editableFixedLevelIds = playerMode ? new Set() : new Set(Array.from({ length: totalHomeLevels }, (_, index) => String(index + 1)));
 const lifeStateKey = "xindong-life-state";
 const maxLives = 5;
