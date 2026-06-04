@@ -1014,11 +1014,7 @@ async function generateAndStoreLevel() {
   try {
     elements.previewMeta.textContent = "正在生成关卡图案...";
     const levelId = elements.levelSelect.value;
-    const prebuilt = normalizeLevel(fixedLevelData[levelId]);
-    const isFixedAsset = typeof sourceImageDataUrl === "string" && sourceImageDataUrl.startsWith("./assets/level-");
-    const level = isFixedAsset && isPlayableLevel(prebuilt)
-      ? prebuilt
-      : generateLevelFromImage(sourceImage, settings);
+    const level = generateLevelFromImage(sourceImage, settings, levelId);
     generatedLevels[elements.levelSelect.value] = level;
     selectedLevelId = elements.levelSelect.value;
     currentGeneratedLevel = level;
