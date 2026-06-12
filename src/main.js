@@ -1,6 +1,6 @@
 const defaultImageSrc = "./assets/level-cat.png";
 const playerMode = window.XINDONG_PLAYER_MODE === true;
-const levelProgressKey = "xindong-level-progress";
+const levelProgressKey = "xindong-level-progress-20260612-reset-1";
 const totalHomeLevels = 10;
 const fixedLevelData = window.NEKO_FIXED_LEVELS || {};
 const fixedLevelConfigs = {
@@ -57,7 +57,7 @@ const fixedLevelConfigs = {
 };
 const storageKey = "xindong-levels-20260604-level1-fix";
 const editableFixedLevelIds = playerMode ? new Set() : new Set(Array.from({ length: totalHomeLevels }, (_, index) => String(index + 1)));
-const lifeStateKey = "xindong-life-state";
+const lifeStateKey = "xindong-life-state-20260612-reset-1";
 const maxLives = 5;
 const lifeRecoveryMs = 60 * 60 * 1000;
 const adTimeBonus = 300;
