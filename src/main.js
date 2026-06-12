@@ -1824,7 +1824,7 @@ function showResultModal(type) {
   elements.resultTitle.textContent = isWin ? "贴纸复原完成" : "失败了";
   elements.resultText.textContent = isWin ? "获得猫咪手账贴纸，金币 +30" : "看广告可额外获得 300 秒继续挑战";
   elements.restartButton.textContent = isWin ? "下一关" : "返回主页";
-  elements.adTimeButton?.classList.toggle("hidden", isWin);
+  elements.adTimeButton?.classList.add("hidden");
   elements.resultModal.classList.remove("hidden");
   window.requestAnimationFrame(applyUiEditorLayouts);
 }
