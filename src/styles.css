@@ -2321,7 +2321,7 @@ body:has(.game-view:not(.hidden)) .toast {
 .result-panel.fail #restartButton {
   position: absolute;
   left: 133px;
-  top: 420px;
+  top: 440px;
   width: 129px;
   height: 56px;
   max-width: none;
@@ -2339,16 +2339,18 @@ body:has(.game-view:not(.hidden)) .toast {
 
 .result-panel.fail .ad-time-button {
   position: absolute;
-  left: 122px;
-  top: 356px;
-  width: 150px;
-  height: 44px;
+  left: 96px;
+  top: 372px;
+  width: 196px;
+  height: 48px;
   border: 3px solid #4a271e;
   border-radius: 18px;
   background: linear-gradient(#fff7d7, #ffbd5a);
   color: #4a271e;
   font-size: 16px;
   font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
   box-shadow: 0 4px 0 rgba(74, 39, 30, 0.2);
   z-index: 2;
 }
